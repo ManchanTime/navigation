@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "7438080774",
+    "project_id": "innergation-1c45e",
+    "storage_bucket": "innergation-1c45e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:7438080774:android:677ffd1347f73335b71c87",
+        "android_client_info": {
+          "package_name": "com.gachon.innergation"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "7438080774-tmk43plkqnrhbbqadcovvsfg35do16ss.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6rTBolKGrqki0BZuZYKzZaanOk418MoU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "7438080774-tmk43plkqnrhbbqadcovvsfg35do16ss.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

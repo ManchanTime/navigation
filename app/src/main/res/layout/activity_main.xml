@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/mainHomePage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="100dp">
+            <ImageView
+                android:id="@+id/homePageTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/navigation_title" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="125dp"
+            android:layout_gravity="center">
+            <Button
+                android:id="@+id/btn_admin"
+                android:layout_width="233dp"
+                android:layout_height="106dp"
+                android:src="@drawable/admin_button"
+                android:background="@drawable/round_button1"
+                android:drawableStart="@drawable/admin_text"
+                android:padding="58dp" />
+            <Button
+                android:id="@+id/btn_user"
+                android:layout_width="233dp"
+                android:layout_height="106dp"
+                android:layout_marginTop="30dp"
+                android:background="@drawable/round_button2"
+                android:drawableStart="@drawable/user_text"
+                android:padding="70dp" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

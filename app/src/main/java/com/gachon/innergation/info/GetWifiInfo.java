@@ -1,0 +1,39 @@
+package com.gachon.innergation.info;
+
+public class GetWifiInfo implements Comparable<GetWifiInfo>{
+    String ssid;
+    String bssid;
+    int rssi;
+
+    public GetWifiInfo(String ssid, String bssid, int rssi){
+        this.ssid = ssid;
+        this.bssid = bssid;
+        this.rssi = rssi;
+    }
+
+    public String getSsid(){
+        return ssid;
+    }
+    public void setSsid(String ssid){
+        this.ssid = ssid;
+    }
+
+    public String getBssid(){
+        return bssid;
+    }
+    public void setBssid(String bssid){
+        this.bssid = bssid;
+    }
+
+    public int getRssi(){
+        return rssi;
+    }
+    public void setRssi(int rssi){
+        this.rssi = rssi;
+    }
+
+    @Override
+    public int compareTo(GetWifiInfo getWifiInfo) {
+        return (getWifiInfo.getRssi()) - getRssi();
+    }
+}
