@@ -1,5 +1,6 @@
 package com.gachon.innergation.activity;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -31,7 +32,11 @@ import com.gachon.innergation.R;
 import com.gachon.innergation.adapter.WifiAdapter;
 import com.gachon.innergation.dialog.CustomDialog;
 import com.gachon.innergation.info.GetWifiInfo;
-import com.gachon.innergation.info.WifiInfo;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.checkerframework.checker.units.qual.A;
@@ -40,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +61,7 @@ public class GetDataActivity extends AppCompatActivity {
     boolean isPermitted = false;
     final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private ArrayList<GetWifiInfo> wifiList = new ArrayList<>();
+    private Map<String, Integer> inputData = new HashMap<>();
     private RecyclerView recyclerView;
     private WifiAdapter wifiAdapter;
     private LinearLayoutManager layoutManager;
@@ -134,6 +141,7 @@ public class GetDataActivity extends AppCompatActivity {
                     //뒤로가기 방지
                     customProgressDialog.setCancelable(false);
                     wifiList.clear();
+                    inputData.clear();
                     // wifi 스캔 시작
                     wifiManager.startScan();
                 } else {
@@ -145,6 +153,12 @@ public class GetDataActivity extends AppCompatActivity {
                 btnUpload.setEnabled(true);
                 break;
             case R.id.btn_upload:
+                customProgressDialog.show();
+                //화면터치 방지
+                customProgressDialog.setCanceledOnTouchOutside(false);
+                //뒤로가기 방지
+                customProgressDialog.setCancelable(false);
+                getDataTest();
                 break;
         }
     };
@@ -155,7 +169,6 @@ public class GetDataActivity extends AppCompatActivity {
             return;
         }
         scanResultList = wifiManager.getScanResults();
-        Log.e("s",scanResultList.size()+"");
         for (int i = 0; i < scanResultList.size(); i++) {
             ScanResult result = scanResultList.get(i);
             wifiList.add(new GetWifiInfo(result.SSID, result.BSSID, result.level));
@@ -211,11 +224,48 @@ public class GetDataActivity extends AppCompatActivity {
 
     public void setUp(){
         FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-        String id = textName.getText().toString();
-        String x = textX.getText().toString();
-        String y = textY.getText().toString();
+
         for(int i=0;i<wifiList.size();i++){
             GetWifiInfo getWifiInfo = wifiList.get(i);
+            inputData.put(getWifiInfo.getBssid(), getWifiInfo.getRssi());
         }
+        firebaseFirestore.collection("classrooms").document("401")
+                .update("RSSI", inputData).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        customProgressDialog.cancel();
+                    }
+                });
+        customProgressDialog.cancel();
+        finish();
+    }
+
+    public void getDataTest(){
+        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+        firebaseFirestore.collection("classrooms").document("401")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if(task.isSuccessful()){
+                            DocumentSnapshot documentSnapshot = task.getResult();
+                            Map<String, Integer> get;
+                            get = (Map<String, Integer>) documentSnapshot.getData().get("RSSI");
+                            if(get != null) {
+                                for(int i=0;i<wifiList.size();i++){
+                                    String bssid = wifiList.get(i).getBssid();
+                                    long rssi = wifiList.get(i).getRssi();
+                                    if(get.get(bssid) != null) {
+                                        long compare = Long.valueOf(String.valueOf(get.get(bssid)));
+                                        if (rssi <= compare) {
+                                            wifiList.get(i).setRssi(Integer.valueOf(String.valueOf(compare)));
+                                        }
+                                    }
+                                }
+                            }
+                            setUp();
+                        }
+                    }
+                });
     }
 }
