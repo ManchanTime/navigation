@@ -65,6 +65,7 @@ public class GetDataActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private WifiAdapter wifiAdapter;
     private LinearLayoutManager layoutManager;
+    private String name;
 
     // BroadcastReceiver 정의
     // 여기서는 이전 예제에서처럼 별도의 Java class 파일로 만들지 않았는데, 어떻게 하든 상관 없음
@@ -117,7 +118,8 @@ public class GetDataActivity extends AppCompatActivity {
         textY = findViewById(R.id.text_y);
         Intent get = getIntent();
         if(get != null){
-            textName.setText(get.getStringExtra("className"));
+            name = get.getStringExtra("className");
+            textName.setText(name);
             textX.setText("x : 0");
             textY.setText("y : 0");
         }
@@ -169,7 +171,7 @@ public class GetDataActivity extends AppCompatActivity {
             return;
         }
         scanResultList = wifiManager.getScanResults();
-        for (int i = 0; i < scanResultList.size(); i++) {
+        for (int i = 0; i < 10; i++) {
             ScanResult result = scanResultList.get(i);
             wifiList.add(new GetWifiInfo(result.SSID, result.BSSID, result.level));
         }
@@ -229,7 +231,7 @@ public class GetDataActivity extends AppCompatActivity {
             GetWifiInfo getWifiInfo = wifiList.get(i);
             inputData.put(getWifiInfo.getBssid(), getWifiInfo.getRssi());
         }
-        firebaseFirestore.collection("classrooms").document("401")
+        firebaseFirestore.collection("classrooms").document(name)
                 .update("RSSI", inputData).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
@@ -242,7 +244,7 @@ public class GetDataActivity extends AppCompatActivity {
 
     public void getDataTest(){
         FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-        firebaseFirestore.collection("classrooms").document("401")
+        firebaseFirestore.collection("classrooms").document(name)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
