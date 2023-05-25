@@ -51,7 +51,7 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassListVie
     public void onBindViewHolder(@NonNull final ClassListViewHolder holder, @SuppressLint("RecyclerView") int position){
         CardView cardView = holder.cardView;
         Button button = cardView.findViewById(R.id.btn_class);
-        button.setText(mDataset.get(position));
+        button.setText(mDataset.get(position) + "호");
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

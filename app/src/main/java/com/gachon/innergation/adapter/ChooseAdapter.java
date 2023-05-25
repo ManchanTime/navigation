@@ -52,7 +52,11 @@ public class ChooseAdapter extends RecyclerView.Adapter<ChooseAdapter.ChooseList
     public void onBindViewHolder(@NonNull final ChooseListViewHolder holder, @SuppressLint("RecyclerView") int position){
         CardView cardView = holder.cardView;
         Button button = cardView.findViewById(R.id.btn_class);
-        button.setText(mDataset.get(position));
+        String name = mDataset.get(position);
+        if(name.equals("artechne_4") || name.equals("artechne_5")){
+            button.setText("artechne");
+        }else
+            button.setText(mDataset.get(position) + "호");
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
