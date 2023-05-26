@@ -23,7 +23,8 @@
 
 ![스크린샷 2023-05-26 224327](https://github.com/ManchanTime/navigation/assets/82303989/ce666e9a-1f65-4a3f-8d3b-327ef34ee96c)
 
-스캔한 데이터는 Firebase의 Firestore에 저장된다.
+스캔한 데이터는 버튼 입력을 통해 연동된 Firebase의 Firestore에 저장된다.  
+정확성 향상을 위해 2번 이상 측정한 결과값의 평균을 저장한다.
 
 ## Member Information
 
