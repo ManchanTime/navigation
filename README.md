@@ -22,3 +22,12 @@
 ## DataBase
 
 ![스크린샷 2023-05-26 224327](https://github.com/ManchanTime/navigation/assets/82303989/ce666e9a-1f65-4a3f-8d3b-327ef34ee96c)
+
+스캔한 데이터는 Firebase의 Firestore에 저장된다.
+
+## Member Information
+
+__문정곤 201935041, FingerPrinting & data insert__  
+__이영찬 201935103, FingerPrinting & current location prediction__  
+__최철웅 201835539, navigation, line drawing__  
+__신준영 201735844, navigation, line drawing__  
