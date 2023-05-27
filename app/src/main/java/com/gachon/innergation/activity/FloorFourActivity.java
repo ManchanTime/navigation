@@ -42,7 +42,7 @@ public class FloorFourActivity extends AppCompatActivity {
             String name = "40" + i;
             classrooms.add(name);
         }
-        for(int i=10;i<36;i++){
+        for(int i=10;i<37;i++){
             String name = "4" + i;
             classrooms.add(name);
         }
