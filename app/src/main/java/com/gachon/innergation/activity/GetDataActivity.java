@@ -69,6 +69,7 @@ public class GetDataActivity extends AppCompatActivity {
     private WifiAdapter wifiAdapter;
     private LinearLayoutManager layoutManager;
     private String name;
+    private int count;
 
     // BroadcastReceiver 정의
     // 여기서는 이전 예제에서처럼 별도의 Java class 파일로 만들지 않았는데, 어떻게 하든 상관 없음
@@ -93,8 +94,8 @@ public class GetDataActivity extends AppCompatActivity {
         List<ScanResult> results = wifiManager.getScanResults();
         for (int i = 0; i < results.size(); i++) {
             ScanResult result = results.get(i);
-            if(!result.BSSID.contains("94:64"))
-                continue;
+            //if(!result.BSSID.contains("94:64"))
+                //continue;
             wifiList.add(new GetWifiInfo(result.SSID, result.BSSID, result.level));
         }
         Collections.sort(wifiList);
@@ -119,7 +120,7 @@ public class GetDataActivity extends AppCompatActivity {
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         getApplicationContext().registerReceiver(wifiScanReceiver, intentFilter);
         // wifi가 활성화되어있는지 확인 후 꺼져 있으면 켠다
-        if(wifiManager.isWifiEnabled() == false)
+        if(!wifiManager.isWifiEnabled())
             wifiManager.setWifiEnabled(true);
 
         //로딩창 객체 생성
@@ -163,10 +164,10 @@ public class GetDataActivity extends AppCompatActivity {
                     input.clear();
                     // wifi 스캔 시작
                     boolean start = wifiManager.startScan();
-                    if(start){
-                        Toast.makeText(this,"success",Toast.LENGTH_SHORT).show();
-                    }else{
-                        Toast.makeText(this,"fail",Toast.LENGTH_SHORT).show();
+                    if (start) {
+                        Toast.makeText(this, "success", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "fail", Toast.LENGTH_SHORT).show();
                         customProgressDialog.cancel();
                     }
                 } else {
@@ -228,11 +229,10 @@ public class GetDataActivity extends AppCompatActivity {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    public void setUp(){
+    public void setting(){
         FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-        firebaseFirestore.collection("classrooms").document(name)
-                .update("RSSI", input).addOnSuccessListener(new OnSuccessListener<Void>() {
+        DocumentReference docRef = firebaseFirestore.collection("classrooms").document(name);
+        docRef.update("RSSI", input).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
                         customProgressDialog.cancel();
@@ -242,36 +242,38 @@ public class GetDataActivity extends AppCompatActivity {
         finish();
     }
 
+
     public void getDataTest(){
-        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-        firebaseFirestore.collection("classrooms").document(name)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @RequiresApi(api = Build.VERSION_CODES.N)
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if(task.isSuccessful()){
-                            DocumentSnapshot documentSnapshot = task.getResult();
-                            ArrayList<Map<String, Integer>> get;
-                            get = (ArrayList<Map<String, Integer>>) documentSnapshot.getData().get("RSSI");
-                            if(get != null) {
-                                for(int i=0;i<wifiList.size();i++){
-                                    String bssid = wifiList.get(i).getBssid();
-                                    long rssi = wifiList.get(i).getRssi();
-                                    for(int j=0;j<get.size();j++){
-                                        Map<String, Integer> tmp = get.get(i);
-                                        if(tmp.get(bssid) != null) {
-                                            long compare = Long.valueOf(String.valueOf(tmp.get(bssid)));
-                                            if (rssi <= compare) {
-                                                wifiList.get(i).setRssi(Integer.valueOf(String.valueOf(compare)));
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            setUp();
-                        }
-                    }
-                });
+        setting();
+//        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
+//        firebaseFirestore.collection("classrooms").document(name)
+//                .get()
+//                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+//                    @RequiresApi(api = Build.VERSION_CODES.N)
+//                    @Override
+//                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+//                        if(task.isSuccessful()){
+//                            DocumentSnapshot documentSnapshot = task.getResult();
+//                            ArrayList<Map<String, Integer>> get;
+//                            get = (ArrayList<Map<String, Integer>>) documentSnapshot.getData().get("RSSI");
+//                            if(get != null) {
+//                                for(int i=0;i<wifiList.size();i++){
+//                                    String bssid = wifiList.get(i).getBssid();
+//                                    long rssi = wifiList.get(i).getRssi();
+//                                    for(int j=0;j<get.size();j++){
+//                                        Map<String, Integer> tmp = get.get(i);
+//                                        if(tmp.get(bssid) != null) {
+//                                            long compare = Long.valueOf(String.valueOf(tmp.get(bssid)));
+//                                            if (rssi <= compare) {
+//                                                wifiList.get(i).setRssi(Integer.valueOf(String.valueOf(compare)));
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                            setUp();
+//                        }
+//                    }
+//                });
     }
 }

@@ -41,6 +41,11 @@ public class GetWifiInfo implements Comparable<GetWifiInfo>, Serializable {
 
     @Override
     public int compareTo(GetWifiInfo getWifiInfo) {
-        return (getWifiInfo.getRssi()) - getRssi();
+        if(getWifiInfo.getRssi() > getRssi())
+            return 1;
+        else if(getWifiInfo.getRssi() == getRssi()){
+            return getWifiInfo.getBssid().compareTo(getBssid());
+        }else
+            return -1;
     }
 }

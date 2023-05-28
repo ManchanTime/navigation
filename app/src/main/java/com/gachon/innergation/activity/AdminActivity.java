@@ -37,4 +37,3 @@ public class AdminActivity extends AppCompatActivity {
         startActivity(intent);
     };
 }
-// admin activity
