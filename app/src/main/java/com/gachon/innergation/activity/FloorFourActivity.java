@@ -39,12 +39,13 @@ public class FloorFourActivity extends AppCompatActivity {
 
     private void setClassName(){
         for(int i=1;i<10;i++){
-            String name = "40" + i + "호";
+            String name = "40" + i;
             classrooms.add(name);
         }
-        for(int i=10;i<20;i++){
-            String name = "4" + i + "호";
+        for(int i=10;i<37;i++){
+            String name = "4" + i;
             classrooms.add(name);
         }
+        classrooms.add("artechne_4");
     }
 }

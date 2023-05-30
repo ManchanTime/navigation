@@ -49,16 +49,14 @@ public class UserSelectActivity extends AppCompatActivity {
     View.OnClickListener onClickListener = (v) -> {
         switch(v.getId()){
             case R.id.btn_current:
-                getCurrentData();
+                Intent intent = new Intent(this, FindActivity.class);
+                intent.putExtra("order", "current");
+                startActivity(intent);
                 break;
             case R.id.btn_search:
-                Intent intent = new Intent(this, UserSearchActivity.class);
+                intent = new Intent(this, UserSearchActivity.class);
                 startActivity(intent);
                 break;
         }
     };
-
-    public void getCurrentData(){
-
-    }
 }

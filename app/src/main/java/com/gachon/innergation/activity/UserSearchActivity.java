@@ -47,8 +47,7 @@ public class UserSearchActivity extends AppCompatActivity {
         editDestination = findViewById(R.id.edit_destination);
         filteredClassrooms = new ArrayList<>();
         classrooms = new ArrayList<>();
-        classrooms.add("401호");
-        classrooms.add("402호");
+        setting();
         recyclerView = findViewById(R.id.recycler_classroom);
         recyclerView.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
@@ -86,5 +85,16 @@ public class UserSearchActivity extends AppCompatActivity {
         }
 
         classAdapter.filterList(filteredClassrooms);
+    }
+
+    private void setting(){
+        for(int i=1;i<10;i++){
+            String name = "40" + i;
+            classrooms.add(name);
+        }
+        for(int i=10;i<36;i++){
+            String name = "4" + i;
+            classrooms.add(name);
+        }
     }
 }

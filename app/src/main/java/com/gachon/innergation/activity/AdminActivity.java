@@ -21,7 +21,7 @@ public class AdminActivity extends AppCompatActivity {
         btnFour = findViewById(R.id.btn_four);
         btnFour.setOnClickListener(onClickListener);
         btnFive = findViewById(R.id.btn_five);
-        btnFour.setOnClickListener(onClickListener);
+        btnFive.setOnClickListener(onClickListener);
     }
 
     View.OnClickListener onClickListener = (v) -> {
@@ -37,4 +37,3 @@ public class AdminActivity extends AppCompatActivity {
         startActivity(intent);
     };
 }
-// admin activity
