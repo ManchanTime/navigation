@@ -100,30 +100,33 @@ public class FindActivity extends AppCompatActivity {
 
         Collections.sort(wifiList);
 
+        Log.e("success", "success");
         for(int i=0;i<5;i++){
             comp.add(wifiList.get(i).getBssid());
             Log.e("test",wifiList.get(i).getSsid() + " " + wifiList.get(i).getBssid()+" " + wifiList.get(i).getRssi());
         }
-
         set_up();
     }
 
     private void scanFailure() {    // Wifi검색 실패
+        Toast.makeText(this, "Fail", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ViewEx viewEx = new ViewEx(this);
         setContentView(R.layout.activity_find);
 
+        BackgroundThread thread = new BackgroundThread();
         requestRuntimePermission();
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        thread.start();
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         getApplicationContext().registerReceiver(wifiScanReceiverNow, intentFilter);
         // wifi가 활성화되어있는지 확인 후 꺼져 있으면 켠다
-        if(wifiManager.isWifiEnabled() == false)
+        if(wifiManager.isWifiEnabled() == false) {
             wifiManager.setWifiEnabled(true);
+        }
 
         //로딩창 객체 생성
         customProgressDialog = new CustomDialog(this);
@@ -209,23 +212,18 @@ public class FindActivity extends AppCompatActivity {
         });
     }
 
-    protected class ViewEx extends View{
-        public ViewEx(Context context)
-        {
-            super(context);
-        }
-        public void onDraw(Canvas canvas)
-        {
-            canvas.drawColor(Color.BLACK);
-
-            Paint MyPaint = new Paint();
-            MyPaint.setStrokeWidth(5f);
-            MyPaint.setStyle(Paint.Style.FILL);
-            MyPaint.setColor(Color.GRAY);
-            canvas.drawLine(0,0,360,640,MyPaint);
+    class BackgroundThread extends Thread{
+        public void run(){
+            while(true){
+                try{
+                    Thread.sleep(100);
+                }catch (Exception e){}
+                wifiList.clear();
+                // wifi 스캔 시작
+                wifiManager.startScan();
+            }
         }
     }
-
 
     //허용하시겠습니까? 퍼미션 창 뜨게하는 것!
     private void requestRuntimePermission() {
