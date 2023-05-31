@@ -38,6 +38,8 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import org.checkerframework.checker.units.qual.A;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,7 +58,6 @@ public class FindActivity extends AppCompatActivity {
     //비교 개수
     private int count = 0;
     //비교 시 4개이상 동일한게 없다면 리스트에 넣어서 제일 비슷한걸ㄹ
-    private int best;
     private String result;
     //비교할 bssid 꺼내기
     private ArrayList<String> comp = new ArrayList<>();
@@ -88,6 +89,7 @@ public class FindActivity extends AppCompatActivity {
             customProgressDialog.cancel();
             return;
         }
+        comp.clear();
         List<ScanResult> results = wifiManager.getScanResults();
         for (int i = 0; i < results.size(); i++) {
             ScanResult result = results.get(i);
@@ -169,24 +171,38 @@ public class FindActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.isSuccessful()){
+                    int best = 0;
                     for(QueryDocumentSnapshot documentSnapshot : task.getResult()) {
+                        ArrayList<String> test = new ArrayList<>();
                         ArrayList<Object> get = (ArrayList<Object>) documentSnapshot.getData().get("RSSI");
                         for(int i=0;i<5;i++){
                             HashMap<String, String> data = (HashMap<String, String>) get.get(i);
 //                            Log.e("SSID", data.get("ssid"));
 //                            Log.e("BSSID", data.get("bssid"));
 //                            Log.e("RSSI",String.valueOf(data.get("rssi")));
+                            test.add(data.get("bssid"));
                             if(comp.contains(data.get("bssid"))){
                                 count++;
                             }
                         }
-
                         //4개 이상 동일시 그냥 현재위치로 추정
-                        if(count >= 4) {
-                            textName.setText(documentSnapshot.getData().get("class").toString());
-                            return;
+                        if(count >= 3) {
+                            //textName.setText(documentSnapshot.getData().get("class").toString());
+                            int tmp = 0;
+                            for(int i=0;i<comp.size();i++){
+                                if(test.get(i).equals(comp.get(i))){
+                                    tmp++;
+                                }
+                            }
+                            if(best < tmp){
+                                best = tmp;
+                                Log.e("b",best+"");
+                                result = documentSnapshot.getData().get("class").toString();
+                                Log.e("test", result);
+                            }
                         }
                     }
+                    textName.setText(result);
                     count = 0;
                 }
             }
