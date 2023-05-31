@@ -21,7 +21,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,6 +71,7 @@ public class FindActivity extends AppCompatActivity {
     //목표 위치
     private String order;
 
+    private ImageView radar;
 
     // BroadcastReceiver 정의
     // 여기서는 이전 예제에서처럼 별도의 Java class 파일로 만들지 않았는데, 어떻게 하든 상관 없음
@@ -116,6 +120,11 @@ public class FindActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ViewEx viewEx = new ViewEx(this);
         setContentView(R.layout.activity_find);
+
+        radar=(ImageView)findViewById(R.id.radar);
+        Animation anim = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate);
+        radar.startAnimation(anim);
+
 
         requestRuntimePermission();
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
