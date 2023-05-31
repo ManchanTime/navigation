@@ -34,6 +34,7 @@ public class FloorFiveActivity extends AppCompatActivity {
         chooseAdapter.setHasStableIds(true);
 
         recyclerView.setAdapter(chooseAdapter);
+
     }
 
     private void setClassName(){
