@@ -55,8 +55,6 @@ public class FindActivity extends AppCompatActivity {
 
     //와이파이 리스트
     private ArrayList<GetWifiInfo> wifiList = new ArrayList<>();
-    //비교 개수
-    private int count = 0;
     //비교 시 4개이상 동일한게 없다면 리스트에 넣어서 제일 비슷한걸ㄹ
     private String result;
     //비교할 bssid 꺼내기
@@ -67,6 +65,10 @@ public class FindActivity extends AppCompatActivity {
     private Button btnNow;
     //목표 위치
     private String order;
+    //쓰레드
+    private static BackgroundThread thread;
+    //측정 개수
+    private int size;
 
 
     // BroadcastReceiver 정의
@@ -93,17 +95,15 @@ public class FindActivity extends AppCompatActivity {
         List<ScanResult> results = wifiManager.getScanResults();
         for (int i = 0; i < results.size(); i++) {
             ScanResult result = results.get(i);
-//            if(!result.BSSID.contains("94:64"))
-//                continue;
+            if(!result.BSSID.contains("94:64"))
+                continue;
             wifiList.add(new GetWifiInfo(result.SSID, result.BSSID, result.level));
         }
 
         Collections.sort(wifiList);
 
-        Log.e("success", "success");
-        for(int i=0;i<5;i++){
+        for(int i=0;i<size;i++){
             comp.add(wifiList.get(i).getBssid());
-            Log.e("test",wifiList.get(i).getSsid() + " " + wifiList.get(i).getBssid()+" " + wifiList.get(i).getRssi());
         }
         set_up();
     }
@@ -113,11 +113,39 @@ public class FindActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause(){
+        super.onPause();
+        try {
+            this.unregisterReceiver(wifiScanReceiverNow);
+        } catch (Exception ignored){}
+        thread.interrupt();
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        try {
+            this.unregisterReceiver(wifiScanReceiverNow);
+        } catch (Exception ignored){}
+        thread.interrupt();
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        try {
+            this.unregisterReceiver(wifiScanReceiverNow);
+        } catch (Exception ignored){}
+        thread.interrupt();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_find);
 
-        BackgroundThread thread = new BackgroundThread();
+        size = 10;
+        thread = new BackgroundThread();
         requestRuntimePermission();
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         thread.start();
@@ -176,21 +204,18 @@ public class FindActivity extends AppCompatActivity {
                 if(task.isSuccessful()){
                     int best = 0;
                     for(QueryDocumentSnapshot documentSnapshot : task.getResult()) {
+                        int count = 0;
                         ArrayList<String> test = new ArrayList<>();
                         ArrayList<Object> get = (ArrayList<Object>) documentSnapshot.getData().get("RSSI");
-                        for(int i=0;i<5;i++){
+                        for(int i=0;i<size;i++){
                             HashMap<String, String> data = (HashMap<String, String>) get.get(i);
-//                            Log.e("SSID", data.get("ssid"));
-//                            Log.e("BSSID", data.get("bssid"));
-//                            Log.e("RSSI",String.valueOf(data.get("rssi")));
                             test.add(data.get("bssid"));
-                            if(comp.contains(data.get("bssid"))){
+                            if(comp.contains(test.get(i))){
                                 count++;
                             }
                         }
                         //4개 이상 동일시 그냥 현재위치로 추정
-                        if(count >= 3) {
-                            //textName.setText(documentSnapshot.getData().get("class").toString());
+                        if(count >= 5) {
                             int tmp = 0;
                             for(int i=0;i<comp.size();i++){
                                 if(test.get(i).equals(comp.get(i))){
@@ -199,14 +224,11 @@ public class FindActivity extends AppCompatActivity {
                             }
                             if(best < tmp){
                                 best = tmp;
-                                Log.e("b",best+"");
                                 result = documentSnapshot.getData().get("class").toString();
-                                Log.e("test", result);
                             }
                         }
                     }
                     textName.setText(result);
-                    count = 0;
                 }
             }
         });
@@ -214,10 +236,12 @@ public class FindActivity extends AppCompatActivity {
 
     class BackgroundThread extends Thread{
         public void run(){
-            while(true){
+            while(!isInterrupted()){
                 try{
                     Thread.sleep(100);
-                }catch (Exception e){}
+                }catch (InterruptedException  e){
+                    Thread.currentThread().interrupt();
+                }catch(Exception e){}
                 wifiList.clear();
                 // wifi 스캔 시작
                 wifiManager.startScan();

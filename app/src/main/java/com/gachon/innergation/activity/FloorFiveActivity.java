@@ -47,5 +47,6 @@ public class FloorFiveActivity extends AppCompatActivity {
             classrooms.add(name);
         }
         classrooms.add("artechne_5");
+        classrooms.add("507_a");
     }
 }
