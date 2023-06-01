@@ -21,7 +21,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -69,6 +72,8 @@ public class FindActivity extends AppCompatActivity {
     private static BackgroundThread thread;
     //측정 개수
     private int size;
+    //레이더 이미지
+    private ImageView radar;
 
 
     // BroadcastReceiver 정의
@@ -143,6 +148,11 @@ public class FindActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_find);
+
+        //레이더 돌리기
+        radar = findViewById(R.id.radar);
+        Animation anim = AnimationUtils.loadAnimation( getApplicationContext(), R.anim.rotate);
+        radar.startAnimation(anim);
 
         size = 10;
         thread = new BackgroundThread();
