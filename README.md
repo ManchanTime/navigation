@@ -27,7 +27,7 @@
 정확성 향상을 위해 2번 이상 측정한 결과값의 평균을 저장한다.
 
 ## Semi-final Report
-[사물인터넷 팀프로젝트 12조.pdf](https://github.com/ManchanTime/navigation/files/11635196/12.pdf)
+[Term Project Team_12.pdf](https://github.com/ManchanTime/navigation/files/11635216/Term.Project.Team_12.pdf)
 
 
 ## Member Information
