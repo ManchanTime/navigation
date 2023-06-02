@@ -26,7 +26,7 @@
 스캔한 데이터는 버튼 입력을 통해 연동된 Firebase의 Firestore에 저장된다.  
 정확성 향상을 위해 2번 이상 측정한 결과값의 평균을 저장한다.
 
-## Semi-final report
+## Semi-final Report
 [사물인터넷 팀프로젝트 12조.pdf](https://github.com/ManchanTime/navigation/files/11635196/12.pdf)
 
 
