@@ -26,26 +26,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gachon.innergation.R;
-import com.gachon.innergation.adapter.WifiAdapter;
 import com.gachon.innergation.dialog.CustomDialog;
 import com.gachon.innergation.info.GetWifiInfo;
-import com.gachon.innergation.info.WifiInfo;
 import com.gachon.innergation.service.DrawMap;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class FindActivity extends AppCompatActivity {
 
@@ -69,6 +63,7 @@ public class FindActivity extends AppCompatActivity {
     //목표 위치
     private String order;
 
+    private static int[][] maps;
 
     // BroadcastReceiver 정의
     // 여기서는 이전 예제에서처럼 별도의 Java class 파일로 만들지 않았는데, 어떻게 하든 상관 없음
@@ -161,8 +156,22 @@ public class FindActivity extends AppCompatActivity {
         });
         textName = findViewById(R.id.text_name);
         // Astar 테스트용. 정적으로 입력된 값을 액티비티 생성 시 출력만 해준다.
-        DrawMap.draw();
 
+        setUpMap();
+        DrawMap.draw(maps);
+
+    }
+
+    private void setUpMap() {
+        maps = new int[][]{
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0},
+                {0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0},
+                {0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0},
+                {0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0}
+        };
     }
 
     // 스캔을 완료했을떄, 스캔한 값으로 현재 강의실 이름을 받아오는 좌표.
