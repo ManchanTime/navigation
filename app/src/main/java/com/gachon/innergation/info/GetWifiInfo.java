@@ -1,9 +1,16 @@
 package com.gachon.innergation.info;
 
-public class GetWifiInfo implements Comparable<GetWifiInfo>{
+import java.io.Serializable;
+
+public class GetWifiInfo implements Comparable<GetWifiInfo>, Serializable {
     String ssid;
     String bssid;
     int rssi;
+
+
+    public GetWifiInfo() {
+    }
+
 
     public GetWifiInfo(String ssid, String bssid, int rssi){
         this.ssid = ssid;
