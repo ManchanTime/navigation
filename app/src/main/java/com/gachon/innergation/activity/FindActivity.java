@@ -21,10 +21,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,6 +55,8 @@ public class FindActivity extends AppCompatActivity {
 
     //와이파이 리스트
     private ArrayList<GetWifiInfo> wifiList = new ArrayList<>();
+    //비교 개수
+    private int count = 0;
     //비교 시 4개이상 동일한게 없다면 리스트에 넣어서 제일 비슷한걸ㄹ
     private String result;
     //비교할 bssid 꺼내기
@@ -68,12 +67,6 @@ public class FindActivity extends AppCompatActivity {
     private Button btnNow;
     //목표 위치
     private String order;
-    //쓰레드
-    private static BackgroundThread thread;
-    //측정 개수
-    private int size;
-    //레이더 이미지
-    private ImageView radar;
 
 
     // BroadcastReceiver 정의
@@ -100,71 +93,37 @@ public class FindActivity extends AppCompatActivity {
         List<ScanResult> results = wifiManager.getScanResults();
         for (int i = 0; i < results.size(); i++) {
             ScanResult result = results.get(i);
-            if(!result.BSSID.contains("94:64"))
-                continue;
+//            if(!result.BSSID.contains("94:64"))
+//                continue;
             wifiList.add(new GetWifiInfo(result.SSID, result.BSSID, result.level));
         }
 
         Collections.sort(wifiList);
 
-        for(int i=0;i<size;i++){
+        for(int i=0;i<5;i++){
             comp.add(wifiList.get(i).getBssid());
+            Log.e("test",wifiList.get(i).getSsid() + " " + wifiList.get(i).getBssid()+" " + wifiList.get(i).getRssi());
         }
+
         set_up();
     }
 
     private void scanFailure() {    // Wifi검색 실패
-        Toast.makeText(this, "Fail", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    protected void onPause(){
-        super.onPause();
-        try {
-            this.unregisterReceiver(wifiScanReceiverNow);
-        } catch (Exception ignored){}
-        thread.interrupt();
-    }
-
-    @Override
-    protected void onStop(){
-        super.onStop();
-        try {
-            this.unregisterReceiver(wifiScanReceiverNow);
-        } catch (Exception ignored){}
-        thread.interrupt();
-    }
-
-    @Override
-    protected void onDestroy(){
-        super.onDestroy();
-        try {
-            this.unregisterReceiver(wifiScanReceiverNow);
-        } catch (Exception ignored){}
-        thread.interrupt();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ViewEx viewEx = new ViewEx(this);
         setContentView(R.layout.activity_find);
 
-        //레이더 돌리기
-        radar = findViewById(R.id.radar);
-        Animation anim = AnimationUtils.loadAnimation( getApplicationContext(), R.anim.rotate);
-        radar.startAnimation(anim);
-
-        size = 10;
-        thread = new BackgroundThread();
         requestRuntimePermission();
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        thread.start();
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         getApplicationContext().registerReceiver(wifiScanReceiverNow, intentFilter);
         // wifi가 활성화되어있는지 확인 후 꺼져 있으면 켠다
-        if(wifiManager.isWifiEnabled() == false) {
+        if(wifiManager.isWifiEnabled() == false)
             wifiManager.setWifiEnabled(true);
-        }
 
         //로딩창 객체 생성
         customProgressDialog = new CustomDialog(this);
@@ -214,18 +173,21 @@ public class FindActivity extends AppCompatActivity {
                 if(task.isSuccessful()){
                     int best = 0;
                     for(QueryDocumentSnapshot documentSnapshot : task.getResult()) {
-                        int count = 0;
                         ArrayList<String> test = new ArrayList<>();
                         ArrayList<Object> get = (ArrayList<Object>) documentSnapshot.getData().get("RSSI");
-                        for(int i=0;i<size;i++){
+                        for(int i=0;i<5;i++){
                             HashMap<String, String> data = (HashMap<String, String>) get.get(i);
+//                            Log.e("SSID", data.get("ssid"));
+//                            Log.e("BSSID", data.get("bssid"));
+//                            Log.e("RSSI",String.valueOf(data.get("rssi")));
                             test.add(data.get("bssid"));
-                            if(comp.contains(test.get(i))){
+                            if(comp.contains(data.get("bssid"))){
                                 count++;
                             }
                         }
                         //4개 이상 동일시 그냥 현재위치로 추정
-                        if(count >= 5) {
+                        if(count >= 3) {
+                            //textName.setText(documentSnapshot.getData().get("class").toString());
                             int tmp = 0;
                             for(int i=0;i<comp.size();i++){
                                 if(test.get(i).equals(comp.get(i))){
@@ -234,30 +196,36 @@ public class FindActivity extends AppCompatActivity {
                             }
                             if(best < tmp){
                                 best = tmp;
+                                Log.e("b",best+"");
                                 result = documentSnapshot.getData().get("class").toString();
+                                Log.e("test", result);
                             }
                         }
                     }
                     textName.setText(result);
+                    count = 0;
                 }
             }
         });
     }
 
-    class BackgroundThread extends Thread{
-        public void run(){
-            while(!isInterrupted()){
-                try{
-                    Thread.sleep(100);
-                }catch (InterruptedException  e){
-                    Thread.currentThread().interrupt();
-                }catch(Exception e){}
-                wifiList.clear();
-                // wifi 스캔 시작
-                wifiManager.startScan();
-            }
+    protected class ViewEx extends View{
+        public ViewEx(Context context)
+        {
+            super(context);
+        }
+        public void onDraw(Canvas canvas)
+        {
+            canvas.drawColor(Color.BLACK);
+
+            Paint MyPaint = new Paint();
+            MyPaint.setStrokeWidth(5f);
+            MyPaint.setStyle(Paint.Style.FILL);
+            MyPaint.setColor(Color.GRAY);
+            canvas.drawLine(0,0,360,640,MyPaint);
         }
     }
+
 
     //허용하시겠습니까? 퍼미션 창 뜨게하는 것!
     private void requestRuntimePermission() {
