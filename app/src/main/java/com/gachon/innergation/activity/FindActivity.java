@@ -36,7 +36,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -158,20 +161,112 @@ public class FindActivity extends AppCompatActivity {
         // Astar 테스트용. 정적으로 입력된 값을 액티비티 생성 시 출력만 해준다.
 
         setUpMap();
-        DrawMap.draw(maps);
+        StringBuilder sb = new StringBuilder();
+//        for(int i=0; i<maps.length; i++) {
+//            for(int k=0; k<maps[i].length; k++) {
+//                sb.append(maps[i][k]);
+//            }
+//            sb.append("\n");
+//        }
+//        System.out.println(sb.toString());
+        String filePath = getApplicationContext().getFilesDir().getPath().toString() + "/AstarMap.txt";
+        try (PrintWriter writer = new PrintWriter(filePath)) {
+            for (int[] row : maps) {
+                writer.println(Arrays.toString(row));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+//        DrawMap.draw(maps);
 
     }
 
+    // Map을 기본적으로 모두 1 (이동불가)로 설정해두고, 이동할 수 있는 경로만 0으로 변경해줌.
     private void setUpMap() {
-        maps = new int[][]{
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0},
-                {0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0},
-                {0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0},
-                {0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0}
-        };
+        int startX = 26, startY = 10, endX = 42, endY = 37;
+        int cnt = 0;
+        boolean cntFlag = false;
+        maps = new int[100][100];
+        for (int i = 0; i < maps.length; i++) {
+            for (int y = 0; y < maps[i].length; y++) {
+                maps[i][y] = 1;
+            }
+        }
+
+        for (int x = 0; x < maps.length; x++) {
+            for (int y = 0; y < maps[x].length; y++) {
+//                (7,85)  (87,85)
+//                (7,88)  (87,88) - 삼각형 제외
+//                => 제일 아래 직사각형
+                if (x >= 7 && x <= 87 && y >= 85 && y <= 88) {
+                    maps[y][x] = 0;
+                }
+
+//                (20, 5)   (22, 5)
+//                (20, 88)   (22, 88)
+//                => 아르테크네에서 내려오는 직선 복도
+                if (x >= 20 && x <= 22 && y >= 5 && y <= 88) {
+                    maps[y][x] = 0;
+                }
+
+//                (20, 37)   (44, 37)
+//                (20, 44)   (44, 44)
+//                => 중간 엘레베이터 직사각형
+                if (x >= 22 && x <= 42 && y >= 37 && y <= 44) {
+                    maps[y][x] = 0;
+                }
+
+//                (31, 75)   (40, 75)
+//                (31, 84)   (40, 84)
+//                => 아래 엘레베이터 직사각형
+                if (x >= 31 && x <= 40 && y >= 75 && y <= 84) {
+                    maps[y][x] = 0;
+                }
+
+//                (22, 75)   (63, 75)
+//                (22, 76)   (63, 76)
+//                => 아래 엘레베이터 위 412호와 405호를 잇는 직사각형
+                if (x >= 22 && x <= 63 && y >= 75 && y <= 76) {
+                    maps[y][x] = 0;
+                }
+
+//                (6, 5)   (25, 5)
+//                (6, 10)   (25, 10)
+//                => 아르테크네
+                if (x >= 6 && x <= 26 && y >= 5 && y <= 10) {
+                    maps[y][x] = 0;
+                }
+
+                // y가 10일때 우리는 26,27,28 만 찍어야 함
+                // 근데 지금은 y가 10일때 26부터 70까지를 다 찍어버림
+                if(y == startY && startY <= endY && startX <= endX) {
+                    for(int k=0; k<4; k++) {
+                        maps[y + k][startX] = 0;
+                    }
+                    cntFlag = !cntFlag;
+                    if(!cntFlag) {
+                        cnt++;
+                        if(cnt % 2 == 0) {
+                            startY++;
+                            startX++;
+                        } else {
+                            startY++;
+                        }
+                    } else {
+                        startX++;
+                        startY++;
+                    }
+//                    cnt++;
+//                    if(cnt % 2 == 0) {
+//                        startY++;
+//                    } else {
+//                        startX++;
+//                        startY++;
+//                    }
+                }
+            }
+        }
     }
 
     // 스캔을 완료했을떄, 스캔한 값으로 현재 강의실 이름을 받아오는 좌표.
