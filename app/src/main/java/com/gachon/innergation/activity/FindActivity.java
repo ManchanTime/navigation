@@ -33,6 +33,7 @@ import com.gachon.innergation.adapter.WifiAdapter;
 import com.gachon.innergation.dialog.CustomDialog;
 import com.gachon.innergation.info.GetWifiInfo;
 import com.gachon.innergation.info.WifiInfo;
+import com.gachon.innergation.service.DrawMap;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
@@ -200,10 +201,13 @@ public class FindActivity extends AppCompatActivity {
             }
         });
         textName = findViewById(R.id.text_name);
-//        Intent get = getIntent();
-//        textName.setText(get.getStringExtra("className"));
+        // Astar 테스트용. 정적으로 입력된 값을 액티비티 생성 시 출력만 해준다.
+        DrawMap.draw();
+
     }
 
+    // 스캔을 완료했을떄, 스캔한 값으로 현재 강의실 이름을 받아오는 좌표.
+    // 강의실 이름을 다 받아오면 Astar 경로 출력을 해보는 테스트를 임의로 진행해보겠다.
     public void set_up(){
         customProgressDialog.cancel();
         FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
