@@ -57,14 +57,14 @@ public class FindActivity extends AppCompatActivity {
     private ArrayList<GetWifiInfo> wifiList = new ArrayList<>();
     //비교 개수
     private int count = 0;
-    //비교 시 4개이상 동일한게 없다면 리스트에 넣어서 제일 비슷한걸ㄹ
+    //비교 시 정해진 수 이상 동일한게 있으면 리스트에 넣어서 제일 비슷한걸로 추출 아니면 continue
+    private static final int countCompare = 7;
     private String result;
     //비교할 bssid 꺼내기
-    private ArrayList<String> comp = new ArrayList<>();
+    private final ArrayList<String> comp = new ArrayList<>();
     //퍼미션
     boolean isPermitted = false;
     private WifiManager wifiManager;
-    private Button btnNow;
     //목표 위치
     private String order;
 
@@ -100,11 +100,9 @@ public class FindActivity extends AppCompatActivity {
 
         Collections.sort(wifiList);
 
-        for(int i=0;i<5;i++){
+        for(int i=0;i<10;i++){
             comp.add(wifiList.get(i).getBssid());
-            Log.e("test",wifiList.get(i).getSsid() + " " + wifiList.get(i).getBssid()+" " + wifiList.get(i).getRssi());
         }
-
         set_up();
     }
 
@@ -131,7 +129,7 @@ public class FindActivity extends AppCompatActivity {
         customProgressDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         Intent get = getIntent();
         //order = get.getStringExtra("order");
-        btnNow = findViewById(R.id.btn_find);
+        Button btnNow = findViewById(R.id.btn_find);
         btnNow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -175,19 +173,15 @@ public class FindActivity extends AppCompatActivity {
                     for(QueryDocumentSnapshot documentSnapshot : task.getResult()) {
                         ArrayList<String> test = new ArrayList<>();
                         ArrayList<Object> get = (ArrayList<Object>) documentSnapshot.getData().get("RSSI");
-                        for(int i=0;i<5;i++){
+                        for(int i=0;i<10;i++){
                             HashMap<String, String> data = (HashMap<String, String>) get.get(i);
-//                            Log.e("SSID", data.get("ssid"));
-//                            Log.e("BSSID", data.get("bssid"));
-//                            Log.e("RSSI",String.valueOf(data.get("rssi")));
                             test.add(data.get("bssid"));
                             if(comp.contains(data.get("bssid"))){
                                 count++;
                             }
                         }
-                        //4개 이상 동일시 그냥 현재위치로 추정
-                        if(count >= 3) {
-                            //textName.setText(documentSnapshot.getData().get("class").toString());
+                        //4개 이상 동일시 순서 비교
+                        if(count >= countCompare) {
                             int tmp = 0;
                             for(int i=0;i<comp.size();i++){
                                 if(test.get(i).equals(comp.get(i))){
@@ -196,14 +190,12 @@ public class FindActivity extends AppCompatActivity {
                             }
                             if(best < tmp){
                                 best = tmp;
-                                Log.e("b",best+"");
                                 result = documentSnapshot.getData().get("class").toString();
-                                Log.e("test", result);
                             }
                         }
+                        count = 0;
                     }
                     textName.setText(result);
-                    count = 0;
                 }
             }
         });
