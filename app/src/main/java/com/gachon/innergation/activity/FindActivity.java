@@ -93,8 +93,8 @@ public class FindActivity extends AppCompatActivity {
         List<ScanResult> results = wifiManager.getScanResults();
         for (int i = 0; i < results.size(); i++) {
             ScanResult result = results.get(i);
-//            if(!result.BSSID.contains("94:64"))
-//                continue;
+            if(!result.BSSID.contains("94:64"))
+                continue;
             wifiList.add(new GetWifiInfo(result.SSID, result.BSSID, result.level));
         }
 
