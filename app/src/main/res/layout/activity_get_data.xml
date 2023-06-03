@@ -20,6 +20,7 @@
             android:layout_height="wrap_content"
             android:textSize="20dp"
             android:gravity="center"
+            android:textStyle="bold"
             android:layout_weight="1"
             tools:text="name"/>
         <TextView
@@ -27,6 +28,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="20dp"
+            android:textStyle="bold"
             android:gravity="center"
             android:layout_weight="1"
             android:text="x"/>
@@ -35,6 +37,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="20dp"
+            android:textStyle="bold"
             android:gravity="center"
             android:layout_weight="1"
             android:text="y"/>
@@ -48,6 +51,8 @@
         android:layout_below="@id/layout_info"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp"
+        android:textStyle="bold"
+        android:background="@drawable/round_button2"
         android:text="Find" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -63,7 +68,11 @@
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/round_button1"
         android:enabled="false"
+        android:textSize="25dp"
+        android:textColor="#000000"
+        android:textStyle="bold"
         android:text="Upload"/>
 
 </RelativeLayout>

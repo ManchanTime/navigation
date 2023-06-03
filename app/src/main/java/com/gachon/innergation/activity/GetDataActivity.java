@@ -94,12 +94,12 @@ public class GetDataActivity extends AppCompatActivity {
         List<ScanResult> results = wifiManager.getScanResults();
         for (int i = 0; i < results.size(); i++) {
             ScanResult result = results.get(i);
-            //if(!result.BSSID.contains("94:64"))
-                //continue;
+            if(!result.BSSID.contains("94:64"))
+                continue;
             wifiList.add(new GetWifiInfo(result.SSID, result.BSSID, result.level));
         }
         Collections.sort(wifiList);
-        for(int i=0;i<5;i++){
+        for(int i=0;i<10;i++){
             input.add(wifiList.get(i));
         }
         wifiAdapter = new WifiAdapter(this, wifiList);
@@ -109,6 +109,17 @@ public class GetDataActivity extends AppCompatActivity {
 
     private void scanFailure() {    // Wifi검색 실패
     }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        try {
+            this.unregisterReceiver(wifiScanReceiver);
+        } catch (IllegalArgumentException e){
+
+        } catch (Exception e) {}
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

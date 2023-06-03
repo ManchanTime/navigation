@@ -34,6 +34,7 @@ public class FloorFiveActivity extends AppCompatActivity {
         chooseAdapter.setHasStableIds(true);
 
         recyclerView.setAdapter(chooseAdapter);
+
     }
 
     private void setClassName(){
@@ -46,5 +47,6 @@ public class FloorFiveActivity extends AppCompatActivity {
             classrooms.add(name);
         }
         classrooms.add("artechne_5");
+        classrooms.add("507_a");
     }
 }
