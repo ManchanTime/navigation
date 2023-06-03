@@ -184,7 +184,9 @@ public class FindActivity extends AppCompatActivity {
 
     // Map을 기본적으로 모두 1 (이동불가)로 설정해두고, 이동할 수 있는 경로만 0으로 변경해줌.
     private void setUpMap() {
-        int startX = 26, startY = 10, endX = 42, endY = 37;
+        int startX = 26, startY = 10;
+//        int endX = 72, endY = 84;
+        int endX = 42, endY = 37;
         int cnt = 0;
         boolean cntFlag = false;
         maps = new int[100][100];
@@ -249,21 +251,15 @@ public class FindActivity extends AppCompatActivity {
                         cnt++;
                         if(cnt % 2 == 0) {
                             startY++;
-                            startX++;
                         } else {
+                            startX++;
                             startY++;
                         }
+//                        startY++;
                     } else {
                         startX++;
                         startY++;
                     }
-//                    cnt++;
-//                    if(cnt % 2 == 0) {
-//                        startY++;
-//                    } else {
-//                        startX++;
-//                        startY++;
-//                    }
                 }
             }
         }
