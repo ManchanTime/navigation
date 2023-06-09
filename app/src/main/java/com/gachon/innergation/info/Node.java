@@ -1,6 +1,8 @@
 package com.gachon.innergation.info;
 
-public class Node implements Comparable<Node>{
+import java.io.Serializable;
+
+public class Node implements Comparable<Node>, Serializable {
 
     public Coord coord;
     public Node parent;

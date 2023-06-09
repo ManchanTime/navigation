@@ -24,16 +24,16 @@ public class Astar {
     Queue<Node> openList = new PriorityQueue<Node>();
     List<Node> closeList = new ArrayList<Node>();
 
-    public void start(MapInfo mapInfo)
+    public void start(MapInfo mapInfo, List<Node> paths)
     {
         if(mapInfo==null) return;
         openList.clear();
         closeList.clear();
         openList.add(mapInfo.start);
-        moveNodes(mapInfo);
+        moveNodes(mapInfo, paths);
     }
 
-    private void moveNodes(MapInfo mapInfo)
+    private void moveNodes(MapInfo mapInfo, List<Node> paths)
     {
         while (!openList.isEmpty())
         {
@@ -42,13 +42,13 @@ public class Astar {
             addNeighborNodeInOpen(mapInfo,current);
             if (isCoordInClose(mapInfo.end.coord))
             {
-                drawPath(mapInfo.maps, mapInfo.end);
+                drawPath(mapInfo.maps, mapInfo.end, paths);
                 break;
             }
         }
     }
 
-    private void drawPath(int[][] maps, Node end)
+    private void drawPath(int[][] maps, Node end, List<Node> paths)
     {
         if(end==null||maps==null) return;
         System.out.println("total cost ：" + end.G);
@@ -56,6 +56,7 @@ public class Astar {
         {
             Coord c = end.coord;
             maps[c.x][c.y] = PATH;
+            paths.add(new Node(c.x, c.y));
             end = end.parent;
         }
     }

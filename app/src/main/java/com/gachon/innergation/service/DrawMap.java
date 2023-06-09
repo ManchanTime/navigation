@@ -1,26 +1,31 @@
 package com.gachon.innergation.service;
 
+import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
+import com.gachon.innergation.activity.NavigateActivity;
 import com.gachon.innergation.info.MapInfo;
 import com.gachon.innergation.info.Node;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class DrawMap {
-    public static void draw(String filePath, int[][] maps, Node sourceNode, Node destNode) {
+
+    private static ArrayList<Node> paths = new ArrayList<>();
+    public static void draw(String filePath, int[][] maps, Node sourceNode, Node destNode, Context context) {
         MapInfo info=new MapInfo(maps,maps[0].length, maps.length,sourceNode, destNode);
-        new Astar().start(info);
-        printMap(filePath, maps);
+        new Astar().start(info, paths);
+        Intent intent = new Intent(context, NavigateActivity.class);
+        intent.putExtra("paths", paths);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
+//        Log.e("TAG", "경로 리스트 갯수" + paths.size());
+//        // TODO 여기서 지도 띄워주는 액티비티 호출하면 될듯
+//        printMap(filePath, maps);
     }
 
     public static void printMap(String filePath, int[][] maps)

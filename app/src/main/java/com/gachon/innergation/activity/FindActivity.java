@@ -402,8 +402,7 @@ public class FindActivity extends AppCompatActivity {
                                     String yValue = values[1];
                                     Log.e("TAG", "x값 : " + xValue);
                                     destNode = new Node(Integer.parseInt(yValue), Integer.parseInt(xValue));
-                                    DrawMap.draw(filePath, maps, sourceNode, destNode);
-
+                                    DrawMap.draw(filePath, maps, sourceNode, destNode, getApplicationContext());
                                 }
                             }
                         } else {
