@@ -26,30 +26,39 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gachon.innergation.R;
-import com.gachon.innergation.adapter.WifiAdapter;
 import com.gachon.innergation.dialog.CustomDialog;
 import com.gachon.innergation.info.GetWifiInfo;
-import com.gachon.innergation.info.WifiInfo;
+import com.gachon.innergation.info.MapInfo;
+import com.gachon.innergation.info.Node;
 import com.gachon.innergation.service.DrawMap;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import org.checkerframework.checker.units.qual.A;
-
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class FindActivity extends AppCompatActivity {
 
     TextView textName;
+    private Node sourceNode;
+    private Node destNode;
+    private String sourceName;
+    private String destinationName;
+    private String filePath;
+    private FirebaseFirestore firebaseFirestore;
     private CustomDialog customProgressDialog;
     final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private IntentFilter intentFilter = new IntentFilter();
@@ -58,7 +67,7 @@ public class FindActivity extends AppCompatActivity {
     private ArrayList<GetWifiInfo> wifiList = new ArrayList<>();
     //비교 개수
     private int count = 0;
-    //비교 시 4개이상 동일한게 없다면 리스트에 넣어서 제일 비슷한걸ㄹ
+    //비교 시 4개이상 동일한게 없다면 리스트에 넣어서 제일 비슷한걸로
     private String result;
     //비교할 bssid 꺼내기
     private ArrayList<String> comp = new ArrayList<>();
@@ -69,6 +78,7 @@ public class FindActivity extends AppCompatActivity {
     //목표 위치
     private String order;
 
+    private static int[][] maps;
 
     // BroadcastReceiver 정의
     // 여기서는 이전 예제에서처럼 별도의 Java class 파일로 만들지 않았는데, 어떻게 하든 상관 없음
@@ -117,7 +127,9 @@ public class FindActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ViewEx viewEx = new ViewEx(this);
         setContentView(R.layout.activity_find);
-
+        Intent intent = getIntent();
+        destinationName = intent.getStringExtra("className");
+        firebaseFirestore = FirebaseFirestore.getInstance();
         requestRuntimePermission();
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
@@ -130,7 +142,6 @@ public class FindActivity extends AppCompatActivity {
         customProgressDialog = new CustomDialog(this);
         customProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         customProgressDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-        Intent get = getIntent();
         //order = get.getStringExtra("order");
         btnNow = findViewById(R.id.btn_find);
         btnNow.setOnClickListener(new View.OnClickListener() {
@@ -160,16 +171,107 @@ public class FindActivity extends AppCompatActivity {
             }
         });
         textName = findViewById(R.id.text_name);
-        // Astar 테스트용. 정적으로 입력된 값을 액티비티 생성 시 출력만 해준다.
-        DrawMap.draw();
+        setUpMap();
+        filePath = getApplicationContext().getFilesDir().getPath().toString();
+//        String mapPath = filePath + "/AstarMap.txt";
+//        try (PrintWriter writer = new PrintWriter(mapPath)) {
+//            for (int[] row : maps) {
+//                writer.println(Arrays.toString(row));
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+        setSourceCoord();
 
+    }
+
+    // Map을 기본적으로 모두 1 (이동불가)로 설정해두고, 이동할 수 있는 경로만 0으로 변경해줌.
+    private void setUpMap() {
+        int startX = 26, startY = 10;
+//        int endX = 72, endY = 84;
+        int endX = 42, endY = 37;
+        int cnt = 0;
+        boolean cntFlag = false;
+        maps = new int[100][100];
+        for (int i = 0; i < maps.length; i++) {
+            for (int y = 0; y < maps[i].length; y++) {
+                maps[i][y] = 1;
+            }
+        }
+
+        for (int x = 0; x < maps.length; x++) {
+            for (int y = 0; y < maps[x].length; y++) {
+//                (7,85)  (87,85)
+//                (7,88)  (87,88) - 삼각형 제외
+//                => 제일 아래 직사각형
+                if (x >= 7 && x <= 87 && y >= 85 && y <= 88) {
+                    maps[y][x] = 0;
+                }
+
+//                (20, 5)   (22, 5)
+//                (20, 88)   (22, 88)
+//                => 아르테크네에서 내려오는 직선 복도
+                if (x >= 20 && x <= 22 && y >= 5 && y <= 88) {
+                    maps[y][x] = 0;
+                }
+
+//                (20, 37)   (44, 37)
+//                (20, 44)   (44, 44)
+//                => 중간 엘레베이터 직사각형
+                if (x >= 22 && x <= 42 && y >= 37 && y <= 44) {
+                    maps[y][x] = 0;
+                }
+
+//                (31, 75)   (40, 75)
+//                (31, 84)   (40, 84)
+//                => 아래 엘레베이터 직사각형
+                if (x >= 31 && x <= 40 && y >= 75 && y <= 84) {
+                    maps[y][x] = 0;
+                }
+
+//                (22, 75)   (63, 75)
+//                (22, 76)   (63, 76)
+//                => 아래 엘레베이터 위 412호와 405호를 잇는 직사각형
+                if (x >= 22 && x <= 63 && y >= 75 && y <= 76) {
+                    maps[y][x] = 0;
+                }
+
+//                (6, 5)   (25, 5)
+//                (6, 10)   (25, 10)
+//                => 아르테크네
+                if (x >= 6 && x <= 26 && y >= 5 && y <= 10) {
+                    maps[y][x] = 0;
+                }
+
+                // y가 10일때 우리는 26,27,28 만 찍어야 함
+                // 근데 지금은 y가 10일때 26부터 70까지를 다 찍어버림
+//                if(y == startY && startY <= endY && startX <= endX) {
+//                    for(int k=0; k<4; k++) {
+//                        maps[y + k][startX] = 0;
+//                    }
+//                    cntFlag = !cntFlag;
+//                    if(!cntFlag) {
+//                        cnt++;
+//                        if(cnt % 2 == 0) {
+//                            startY++;
+//                        } else {
+//                            startX++;
+//                            startY++;
+//                        }
+////                        startY++;
+//                    } else {
+//                        startX++;
+//                        startY++;
+//                    }
+//                }
+            }
+        }
     }
 
     // 스캔을 완료했을떄, 스캔한 값으로 현재 강의실 이름을 받아오는 좌표.
     // 강의실 이름을 다 받아오면 Astar 경로 출력을 해보는 테스트를 임의로 진행해보겠다.
     public void set_up(){
         customProgressDialog.cancel();
-        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
         CollectionReference collectionReference = firebaseFirestore.collection("classrooms");
         collectionReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -207,10 +309,14 @@ public class FindActivity extends AppCompatActivity {
                         }
                     }
                     textName.setText(result);
+                    // 여기서 출발지가 결정된다.
+                    sourceName = result;
                     count = 0;
                 }
             }
         });
+        // 일단은 정적으로 값을 넣어두겠다.
+        sourceName = "412";
     }
 
     protected class ViewEx extends View{
@@ -247,6 +353,71 @@ public class FindActivity extends AppCompatActivity {
         } else {
             isPermitted = true;
         }
+    }
+
+    private void setSourceCoord() {
+        DocumentReference docRef = firebaseFirestore.collection("classroom_coordinate").document("413");
+        docRef.get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            String coordinates = documentSnapshot.getString("value");
+                            if (coordinates != null) {
+                                String[] values = coordinates.split(",");
+                                if (values.length == 2) {
+                                    String xValue = values[0];
+                                    String yValue = values[1];
+                                    Log.e("TAG", "x값 : " + xValue);
+                                    sourceNode = new Node(Integer.parseInt(yValue), Integer.parseInt(xValue));
+                                    setDestCoord(destinationName);
+                                }
+                            }
+                        } else {
+                            // 도큐먼트가 존재하지 않을 경우 처리
+                            Log.e("TAG", "도큐먼트 존재 x");
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("TAG", "onFailure: " + e);
+                    }
+                });
+
+    }
+
+    private void setDestCoord(String dest) {
+        DocumentReference docRef = firebaseFirestore.collection("classroom_coordinate").document(dest);
+        docRef.get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            String coordinates = documentSnapshot.getString("value");
+                            if (coordinates != null) {
+                                String[] values = coordinates.split(",");
+                                if (values.length == 2) {
+                                    String xValue = values[0];
+                                    String yValue = values[1];
+                                    Log.e("TAG", "x값 : " + xValue);
+                                    destNode = new Node(Integer.parseInt(yValue), Integer.parseInt(xValue));
+                                    DrawMap.draw(filePath, maps, sourceNode, destNode);
+
+                                }
+                            }
+                        } else {
+                            // 도큐먼트가 존재하지 않을 경우 처리
+                            Log.e("TAG", "도큐먼트 존재 x");
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("TAG", "onFailure: " + e);
+                    }
+                });
+
     }
 
     @Override
