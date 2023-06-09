@@ -173,14 +173,14 @@ public class FindActivity extends AppCompatActivity {
         textName = findViewById(R.id.text_name);
         setUpMap();
         filePath = getApplicationContext().getFilesDir().getPath().toString();
-//        String mapPath = filePath + "/AstarMap.txt";
-//        try (PrintWriter writer = new PrintWriter(mapPath)) {
-//            for (int[] row : maps) {
-//                writer.println(Arrays.toString(row));
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        String mapPath = filePath + "/AstarMap.txt";
+        try (PrintWriter writer = new PrintWriter(mapPath)) {
+            for (int[] row : maps) {
+                writer.println(Arrays.toString(row));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         setSourceCoord();
 
     }
@@ -242,6 +242,131 @@ public class FindActivity extends AppCompatActivity {
                 if (x >= 6 && x <= 26 && y >= 5 && y <= 10) {
                     maps[y][x] = 0;
                 }
+
+                if (x >= 45 && x <= 49 && y == 44) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 46 && x <= 49 && y == 45) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 47 && x <= 50 && y == 46) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 47 && x <= 50 && y == 47) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 48 && x <= 50 && y == 48) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 49 && x <= 51 && y == 49) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 49 && x <= 52 && y == 50) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 50 && x <= 52 && y == 51) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 50 && x <= 53 && y == 52) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 51 && x <= 53 && y == 53) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 51 && x <= 54 && y == 54) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 52 && x <= 54 && y == 55) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 53 && x <= 55 && y == 56) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 53 && x <= 56 && y == 57) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 54 && x <= 57 && y == 58) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 55 && x <= 57 && y == 59) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 55 && x <= 58 && y == 60) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 56 && x <= 58 && y == 61) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 56 && x <= 59 && y == 62) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 57 && x <= 60 && y == 63) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 58 && x <= 60 && y == 64) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 58 && x <= 61 && y == 65) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 59 && x <= 61 && y == 66) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 60 && x <= 62 && y == 67) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 60 && x <= 62 && y == 68) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 61 && x <= 63 && y == 69) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 61 && x <= 63 && y == 70) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 62 && x <= 64 && y == 71) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 62 && x <= 65 && y == 72) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 63 && x <= 65 && y == 73) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 64 && x <= 66 && y == 74) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 64 && x <= 67 && y == 75) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 64 && x <= 67 && y == 76) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 65 && x <= 67 && y == 77) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 65 && x <= 68 && y == 78) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 67 && x <= 69 && y == 79) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 67 && x <= 69 && y == 80) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 68 && x <= 70 && y == 81) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 68 && x <= 71 && y == 82) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 69 && x <= 71 && y == 83) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 68 && x <= 71 && y == 84) {
+                    maps[y][x] = 0;
+                }
+
 
                 // y가 10일때 우리는 26,27,28 만 찍어야 함
                 // 근데 지금은 y가 10일때 26부터 70까지를 다 찍어버림
