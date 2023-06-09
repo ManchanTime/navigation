@@ -1,38 +1,40 @@
 package com.gachon.innergation.service;
 
+import android.util.Log;
+
+import androidx.annotation.NonNull;
+
 import com.gachon.innergation.info.MapInfo;
 import com.gachon.innergation.info.Node;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Arrays;
 
 public class DrawMap {
-
-    // 기존에는 여기서 map을 선언하고 지도를 그림.
-    // 하지만 이렇게 하면 현재 위치가 갱신되고 draw를 호출할 때마다 지도를 다시 그리게 됨 => 성능 이슈
-    // 따라서 maps는 상위 액티비티에서 처음 한번만 그리고, 그 뒤부터는 매개변수로 받아와서 사용허겠음
-//    static int[][] maps = {
-//            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-//            { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-//            { 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0 },
-//            { 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0 },
-//            { 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0 },
-//            { 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 },
-//            { 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 }
-//    };
-
-    public static void draw(int[][] maps) {
-        MapInfo info=new MapInfo(maps,maps[0].length, maps.length,new Node(1, 1), new Node(5, 4));
+    public static void draw(String filePath, int[][] maps, Node sourceNode, Node destNode) {
+        MapInfo info=new MapInfo(maps,maps[0].length, maps.length,sourceNode, destNode);
         new Astar().start(info);
-        printMap(maps);
+        printMap(filePath, maps);
     }
 
-    public static void printMap(int[][] maps)
+    public static void printMap(String filePath, int[][] maps)
     {
-        for (int i = 0; i < maps.length; i++)
-        {
-            for (int j = 0; j < maps[i].length; j++)
-            {
-                System.out.print(maps[i][j] + " ");
+        String resultPath = filePath + "/AstarMapResult.txt";
+        try (PrintWriter writer = new PrintWriter(resultPath)) {
+            for (int[] row : maps) {
+                writer.println(Arrays.toString(row));
             }
-            System.out.println();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
+
+
+
 }

@@ -28,10 +28,16 @@ import android.widget.Toast;
 import com.gachon.innergation.R;
 import com.gachon.innergation.dialog.CustomDialog;
 import com.gachon.innergation.info.GetWifiInfo;
+import com.gachon.innergation.info.MapInfo;
+import com.gachon.innergation.info.Node;
 import com.gachon.innergation.service.DrawMap;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -47,6 +53,12 @@ import java.util.List;
 public class FindActivity extends AppCompatActivity {
 
     TextView textName;
+    private Node sourceNode;
+    private Node destNode;
+    private String sourceName;
+    private String destinationName;
+    private String filePath;
+    private FirebaseFirestore firebaseFirestore;
     private CustomDialog customProgressDialog;
     final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private IntentFilter intentFilter = new IntentFilter();
@@ -55,7 +67,7 @@ public class FindActivity extends AppCompatActivity {
     private ArrayList<GetWifiInfo> wifiList = new ArrayList<>();
     //비교 개수
     private int count = 0;
-    //비교 시 4개이상 동일한게 없다면 리스트에 넣어서 제일 비슷한걸ㄹ
+    //비교 시 4개이상 동일한게 없다면 리스트에 넣어서 제일 비슷한걸로
     private String result;
     //비교할 bssid 꺼내기
     private ArrayList<String> comp = new ArrayList<>();
@@ -115,7 +127,9 @@ public class FindActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ViewEx viewEx = new ViewEx(this);
         setContentView(R.layout.activity_find);
-
+        Intent intent = getIntent();
+        destinationName = intent.getStringExtra("className");
+        firebaseFirestore = FirebaseFirestore.getInstance();
         requestRuntimePermission();
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
@@ -128,7 +142,6 @@ public class FindActivity extends AppCompatActivity {
         customProgressDialog = new CustomDialog(this);
         customProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         customProgressDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-        Intent get = getIntent();
         //order = get.getStringExtra("order");
         btnNow = findViewById(R.id.btn_find);
         btnNow.setOnClickListener(new View.OnClickListener() {
@@ -158,27 +171,17 @@ public class FindActivity extends AppCompatActivity {
             }
         });
         textName = findViewById(R.id.text_name);
-        // Astar 테스트용. 정적으로 입력된 값을 액티비티 생성 시 출력만 해준다.
-
         setUpMap();
-        StringBuilder sb = new StringBuilder();
-//        for(int i=0; i<maps.length; i++) {
-//            for(int k=0; k<maps[i].length; k++) {
-//                sb.append(maps[i][k]);
+        filePath = getApplicationContext().getFilesDir().getPath().toString();
+//        String mapPath = filePath + "/AstarMap.txt";
+//        try (PrintWriter writer = new PrintWriter(mapPath)) {
+//            for (int[] row : maps) {
+//                writer.println(Arrays.toString(row));
 //            }
-//            sb.append("\n");
+//        } catch (IOException e) {
+//            e.printStackTrace();
 //        }
-//        System.out.println(sb.toString());
-        String filePath = getApplicationContext().getFilesDir().getPath().toString() + "/AstarMap.txt";
-        try (PrintWriter writer = new PrintWriter(filePath)) {
-            for (int[] row : maps) {
-                writer.println(Arrays.toString(row));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-//        DrawMap.draw(maps);
+        setSourceCoord();
 
     }
 
@@ -242,25 +245,25 @@ public class FindActivity extends AppCompatActivity {
 
                 // y가 10일때 우리는 26,27,28 만 찍어야 함
                 // 근데 지금은 y가 10일때 26부터 70까지를 다 찍어버림
-                if(y == startY && startY <= endY && startX <= endX) {
-                    for(int k=0; k<4; k++) {
-                        maps[y + k][startX] = 0;
-                    }
-                    cntFlag = !cntFlag;
-                    if(!cntFlag) {
-                        cnt++;
-                        if(cnt % 2 == 0) {
-                            startY++;
-                        } else {
-                            startX++;
-                            startY++;
-                        }
+//                if(y == startY && startY <= endY && startX <= endX) {
+//                    for(int k=0; k<4; k++) {
+//                        maps[y + k][startX] = 0;
+//                    }
+//                    cntFlag = !cntFlag;
+//                    if(!cntFlag) {
+//                        cnt++;
+//                        if(cnt % 2 == 0) {
+//                            startY++;
+//                        } else {
+//                            startX++;
+//                            startY++;
+//                        }
+////                        startY++;
+//                    } else {
+//                        startX++;
 //                        startY++;
-                    } else {
-                        startX++;
-                        startY++;
-                    }
-                }
+//                    }
+//                }
             }
         }
     }
@@ -269,7 +272,6 @@ public class FindActivity extends AppCompatActivity {
     // 강의실 이름을 다 받아오면 Astar 경로 출력을 해보는 테스트를 임의로 진행해보겠다.
     public void set_up(){
         customProgressDialog.cancel();
-        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
         CollectionReference collectionReference = firebaseFirestore.collection("classrooms");
         collectionReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
@@ -307,10 +309,14 @@ public class FindActivity extends AppCompatActivity {
                         }
                     }
                     textName.setText(result);
+                    // 여기서 출발지가 결정된다.
+                    sourceName = result;
                     count = 0;
                 }
             }
         });
+        // 일단은 정적으로 값을 넣어두겠다.
+        sourceName = "412";
     }
 
     protected class ViewEx extends View{
@@ -347,6 +353,71 @@ public class FindActivity extends AppCompatActivity {
         } else {
             isPermitted = true;
         }
+    }
+
+    private void setSourceCoord() {
+        DocumentReference docRef = firebaseFirestore.collection("classroom_coordinate").document("413");
+        docRef.get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            String coordinates = documentSnapshot.getString("value");
+                            if (coordinates != null) {
+                                String[] values = coordinates.split(",");
+                                if (values.length == 2) {
+                                    String xValue = values[0];
+                                    String yValue = values[1];
+                                    Log.e("TAG", "x값 : " + xValue);
+                                    sourceNode = new Node(Integer.parseInt(yValue), Integer.parseInt(xValue));
+                                    setDestCoord(destinationName);
+                                }
+                            }
+                        } else {
+                            // 도큐먼트가 존재하지 않을 경우 처리
+                            Log.e("TAG", "도큐먼트 존재 x");
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("TAG", "onFailure: " + e);
+                    }
+                });
+
+    }
+
+    private void setDestCoord(String dest) {
+        DocumentReference docRef = firebaseFirestore.collection("classroom_coordinate").document(dest);
+        docRef.get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        if (documentSnapshot.exists()) {
+                            String coordinates = documentSnapshot.getString("value");
+                            if (coordinates != null) {
+                                String[] values = coordinates.split(",");
+                                if (values.length == 2) {
+                                    String xValue = values[0];
+                                    String yValue = values[1];
+                                    Log.e("TAG", "x값 : " + xValue);
+                                    destNode = new Node(Integer.parseInt(yValue), Integer.parseInt(xValue));
+                                    DrawMap.draw(filePath, maps, sourceNode, destNode);
+
+                                }
+                            }
+                        } else {
+                            // 도큐먼트가 존재하지 않을 경우 처리
+                            Log.e("TAG", "도큐먼트 존재 x");
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("TAG", "onFailure: " + e);
+                    }
+                });
+
     }
 
     @Override
