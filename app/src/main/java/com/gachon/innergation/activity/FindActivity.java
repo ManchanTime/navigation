@@ -115,13 +115,16 @@ public class FindActivity extends AppCompatActivity {
         ViewEx viewEx = new ViewEx(this);
         setContentView(R.layout.activity_find);
 
+        BackgroundThread thread = new BackgroundThread();
         requestRuntimePermission();
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        thread.start();
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         getApplicationContext().registerReceiver(wifiScanReceiverNow, intentFilter);
         // wifi가 활성화되어있는지 확인 후 꺼져 있으면 켠다
-        if(wifiManager.isWifiEnabled() == false)
+        if(wifiManager.isWifiEnabled() == false) {
             wifiManager.setWifiEnabled(true);
+        }
 
         //로딩창 객체 생성
         customProgressDialog = new CustomDialog(this);
@@ -165,10 +168,13 @@ public class FindActivity extends AppCompatActivity {
         customProgressDialog.cancel();
         FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
         CollectionReference collectionReference = firebaseFirestore.collection("classrooms");
-        collectionReference.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+        collectionReference
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.isSuccessful()){
+                    int best_count = 0;
                     int best = 0;
                     for(QueryDocumentSnapshot documentSnapshot : task.getResult()) {
                         ArrayList<String> test = new ArrayList<>();
@@ -180,15 +186,18 @@ public class FindActivity extends AppCompatActivity {
                                 count++;
                             }
                         }
-                        //4개 이상 동일시 순서 비교
-                        if(count >= countCompare) {
+                        if(best_count < count){
+                            best_count = count;
+                            result = documentSnapshot.getData().get("class").toString();
+                        }
+                        else if(best_count == count) {
                             int tmp = 0;
-                            for(int i=0;i<comp.size();i++){
-                                if(test.get(i).equals(comp.get(i))){
+                            for (int i = 0; i < comp.size(); i++) {
+                                if (test.get(i).equals(comp.get(i))) {
                                     tmp++;
                                 }
                             }
-                            if(best < tmp){
+                            if (best < tmp) {
                                 best = tmp;
                                 result = documentSnapshot.getData().get("class").toString();
                             }
@@ -234,6 +243,19 @@ public class FindActivity extends AppCompatActivity {
             }
         } else {
             isPermitted = true;
+        }
+    }
+
+    class BackgroundThread extends Thread{
+        public void run(){
+            while(true){
+                try{
+                    Thread.sleep(100);
+                }catch (Exception e){}
+                wifiList.clear();
+                // wifi 스캔 시작
+                wifiManager.startScan();
+            }
         }
     }
 
