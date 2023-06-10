@@ -1,5 +1,6 @@
 package com.gachon.innergation.activity;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -9,6 +10,14 @@ import android.view.View;
 import android.widget.Button;
 
 import com.gachon.innergation.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
         btnUser = findViewById(R.id.btn_user);
         btnAdmin.setOnClickListener(onClickListener);
         btnUser.setOnClickListener(onClickListener);
+
     }
 
     View.OnClickListener onClickListener = (v) -> {

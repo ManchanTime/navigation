@@ -2,8 +2,15 @@ package com.gachon.innergation.service;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
+import android.widget.ImageView;
 
+import com.gachon.innergation.R;
 import com.gachon.innergation.activity.NavigateActivity;
 import com.gachon.innergation.info.MapInfo;
 import com.gachon.innergation.info.Node;
@@ -38,6 +45,27 @@ public class DrawMap {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void drawLine(ImageView imageView, float startX, float startY, float endX, float endY) {
+        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        Bitmap mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+
+        Canvas canvas = new Canvas(mutableBitmap);
+        Paint paint = new Paint();
+        paint.setColor(Color.RED);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(7.0f);
+
+        // 상대적인 위치를 기준으로 선을 그립니다.
+        float startXPos = (startX / 100) * canvas.getWidth();
+        float startYPos = (startY / 100) * canvas.getHeight();
+        float endXPos = (endX / 100) * canvas.getWidth();
+        float endYPos = (endY / 100) * canvas.getHeight();
+
+        canvas.drawLine(startXPos, startYPos, endXPos, endYPos, paint);
+
+        imageView.setImageBitmap(mutableBitmap);
     }
 
 
