@@ -40,6 +40,9 @@
             android:name=".activity.AdminActivity"
             android:exported="false" />
         <activity
+            android:name=".activity.NavigateActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.MainActivity"
             android:exported="true">
             <intent-filter>
