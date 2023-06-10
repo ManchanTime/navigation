@@ -11,9 +11,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
@@ -22,6 +24,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -76,6 +79,8 @@ public class FindActivity extends AppCompatActivity {
 
     private static int[][] maps;
 
+    private TextView textView;
+
     // BroadcastReceiver 정의
     // 여기서는 이전 예제에서처럼 별도의 Java class 파일로 만들지 않았는데, 어떻게 하든 상관 없음
     BroadcastReceiver wifiScanReceiverNow = new BroadcastReceiver() {
@@ -113,14 +118,14 @@ public class FindActivity extends AppCompatActivity {
         set_up();
     }
 
-    private void scanFailure() {    // Wifi검색 실패
-    }
+    private void scanFailure() {}
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_find);
 
+        textView = findViewById(R.id.textView);
         //목적지 받아오기
         Intent intent = getIntent();
         if(intent != null) {
@@ -144,7 +149,6 @@ public class FindActivity extends AppCompatActivity {
         customProgressDialog = new CustomDialog(this);
         customProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         customProgressDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-        //order = get.getStringExtra("order");
         setUpMap();
         filePath = getApplicationContext().getFilesDir().getPath().toString();
         String mapPath = filePath + "/AstarMap.txt";
@@ -403,13 +407,15 @@ public class FindActivity extends AppCompatActivity {
                                 result = documentSnapshot.getData().get("class").toString();
                             }
                         }
+                        count = 0;
                     }
+                    Log.e("Test", result + " " + best_count);
+                    textView.setText(result);
                     if(destinationName == null)
                         destinationName = result;
                     // 여기서 출발지가 결정된다.
                     sourceName = result;
                     setSourceCoord();
-                    count = 0;
                 }
             }
         });
@@ -449,7 +455,6 @@ public class FindActivity extends AppCompatActivity {
     }
 
     private void setSourceCoord() {
-        Log.e("name", sourceName);
         DocumentReference docRef = firebaseFirestore.collection("classroom_coordinate").document(sourceName);
         docRef.get()
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -495,8 +500,18 @@ public class FindActivity extends AppCompatActivity {
                                     String xValue = values[0];
                                     String yValue = values[1];
                                     Log.e("TAG", "x값 : " + xValue);
+
                                     destNode = new Node(Integer.parseInt(yValue), Integer.parseInt(xValue));
                                     DrawMap.draw(filePath, maps, sourceNode, destNode, getApplicationContext());
+                                    ArrayList<Node> getPaths = DrawMap.getPaths();
+                                    ImageView view1 = findViewById(R.id.view1);
+                                    for(int i=0;i<getPaths.size();i++){
+                                        Node startPoint = getPaths.get(i);
+                                        if(i+1 < getPaths.size()) {
+                                            Node endPoint = getPaths.get(i + 1);
+                                            drawLine(view1, startPoint.coord.y, startPoint.coord.x, endPoint.coord.y, endPoint.coord.x);
+                                        }
+                                    }
                                 }
                             }
                         } else {
@@ -517,21 +532,37 @@ public class FindActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // ACCESS_FINE_LOCATION 권한을 얻음
-                    isPermitted = true;
+        if (requestCode == MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {// If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // ACCESS_FINE_LOCATION 권한을 얻음
+                isPermitted = true;
 
-                } else {
-                    // 권한을 얻지 못 하였으므로 location 요청 작업을 수행할 수 없다
-                    // 적절히 대처한다
-                    isPermitted = false;
-                }
+            } else {
+                // 권한을 얻지 못 하였으므로 location 요청 작업을 수행할 수 없다
+                // 적절히 대처한다
+                isPermitted = false;
             }
         }
     }
+    public void drawLine(ImageView imageView, float startX, float startY, float endX, float endY) {
+        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        Bitmap mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
 
+        Canvas canvas = new Canvas(mutableBitmap);
+        Paint paint = new Paint();
+        paint.setColor(Color.RED);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(7.0f);
+
+        // 상대적인 위치를 기준으로 선을 그립니다.
+        float startXPos = (startX / 100) * canvas.getWidth();
+        float startYPos = (startY / 100) * canvas.getHeight();
+        float endXPos = (endX / 100) * canvas.getWidth();
+        float endYPos = (endY / 100) * canvas.getHeight();
+
+        canvas.drawLine(startXPos, startYPos, endXPos, endYPos, paint);
+
+        imageView.setImageBitmap(mutableBitmap);
+    }
 }

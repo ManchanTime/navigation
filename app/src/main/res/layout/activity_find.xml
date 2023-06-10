@@ -32,6 +32,7 @@
             android:layout_gravity="end"
             tools:text="Hi"/>
 
+
         <!--        <com.example.myapplication3.DotView-->
         <!--            android:id="@+id/dot_view"-->
         <!--            android:layout_width="match_parent"-->
