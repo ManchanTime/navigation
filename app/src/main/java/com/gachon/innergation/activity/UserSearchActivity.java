@@ -96,5 +96,16 @@ public class UserSearchActivity extends AppCompatActivity {
             String name = "4" + i;
             classrooms.add(name);
         }
+        classrooms.add("artechne_4");
+
+        for(int i=1;i<10;i++){
+            String name = "50" + i;
+            classrooms.add(name);
+        }
+        for(int i=10;i<33;i++){
+            String name = "5" + i;
+            classrooms.add(name);
+        }
+        classrooms.add("artechne_5");
     }
 }
