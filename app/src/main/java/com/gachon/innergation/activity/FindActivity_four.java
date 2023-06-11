@@ -21,17 +21,13 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.gachon.innergation.R;
 import com.gachon.innergation.dialog.CustomDialog;
 import com.gachon.innergation.info.GetWifiInfo;
-import com.gachon.innergation.info.MapInfo;
 import com.gachon.innergation.info.Node;
 import com.gachon.innergation.service.DrawMap;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -53,7 +49,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class FindActivity extends AppCompatActivity {
+public class FindActivity_four extends AppCompatActivity {
 
     private Node sourceNode;
     private Node destNode;
@@ -123,7 +119,7 @@ public class FindActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_find);
+        setContentView(R.layout.activity_find_four);
 
         textView = findViewById(R.id.textView);
         //목적지 받아오기
@@ -395,21 +391,11 @@ public class FindActivity extends AppCompatActivity {
                             best_count = count;
                             result = documentSnapshot.getData().get("class").toString();
                         }
-                        else if(best_count == count) {
-                            int tmp = 0;
-                            for (int i = 0; i < comp.size(); i++) {
-                                if (test.get(i).equals(comp.get(i))) {
-                                    tmp++;
-                                }
-                            }
-                            if (best < tmp) {
-                                best = tmp;
-                                result = documentSnapshot.getData().get("class").toString();
-                            }
+                        else if(best_count == count){
+
                         }
                         count = 0;
                     }
-                    Log.e("Test", result + " " + best_count);
                     textView.setText(result);
                     if(destinationName == null)
                         destinationName = result;
@@ -438,14 +424,14 @@ public class FindActivity extends AppCompatActivity {
 
     //허용하시겠습니까? 퍼미션 창 뜨게하는 것!
     private void requestRuntimePermission() {
-        if (ContextCompat.checkSelfPermission(FindActivity.this,
+        if (ContextCompat.checkSelfPermission(FindActivity_four.this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            if (ActivityCompat.shouldShowRequestPermissionRationale(FindActivity.this,
+            if (ActivityCompat.shouldShowRequestPermissionRationale(FindActivity_four.this,
                     Manifest.permission.ACCESS_FINE_LOCATION)) {
             } else {
-                ActivityCompat.requestPermissions(FindActivity.this,
+                ActivityCompat.requestPermissions(FindActivity_four.this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
             }

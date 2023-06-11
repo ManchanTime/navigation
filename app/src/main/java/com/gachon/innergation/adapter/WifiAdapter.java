@@ -2,30 +2,16 @@ package com.gachon.innergation.adapter;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gachon.innergation.activity.FindActivity;
-import com.gachon.innergation.activity.GetDataActivity;
 import com.gachon.innergation.info.GetWifiInfo;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.gachon.innergation.R;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
