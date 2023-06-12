@@ -16,9 +16,6 @@ import com.gachon.innergation.R;
 import com.gachon.innergation.adapter.ClassAdapter;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import org.checkerframework.checker.units.qual.A;
-import org.checkerframework.checker.units.qual.C;
-
 import java.util.ArrayList;
 
 public class UserSelectActivity extends AppCompatActivity {
@@ -49,7 +46,7 @@ public class UserSelectActivity extends AppCompatActivity {
     View.OnClickListener onClickListener = (v) -> {
         switch(v.getId()){
             case R.id.btn_current:
-                Intent intent = new Intent(this, FindActivity.class);
+                Intent intent = new Intent(this, FindActivity_four.class);
                 intent.putExtra("order", "current");
                 startActivity(intent);
                 break;

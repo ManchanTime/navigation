@@ -3,7 +3,6 @@ package com.gachon.innergation.adapter;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,11 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gachon.innergation.activity.FindActivity;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.gachon.innergation.activity.FindActivity_four;
 import com.gachon.innergation.R;
 
 import java.util.ArrayList;
@@ -55,7 +50,7 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassListVie
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(activity, FindActivity.class);
+                Intent intent = new Intent(activity, FindActivity_four.class);
                 intent.putExtra("className", mDataset.get(position));
                 activity.startActivity(intent);
             }

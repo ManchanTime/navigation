@@ -11,24 +11,23 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.gachon.innergation.R;
 import com.gachon.innergation.dialog.CustomDialog;
 import com.gachon.innergation.info.GetWifiInfo;
-import com.gachon.innergation.info.MapInfo;
 import com.gachon.innergation.info.Node;
 import com.gachon.innergation.service.DrawMap;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -50,9 +49,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-public class FindActivity extends AppCompatActivity {
+public class FindActivity_four extends AppCompatActivity {
 
-    TextView textName;
     private Node sourceNode;
     private Node destNode;
     private String sourceName;
@@ -74,11 +72,10 @@ public class FindActivity extends AppCompatActivity {
     //퍼미션
     boolean isPermitted = false;
     private WifiManager wifiManager;
-    private Button btnNow;
-    //목표 위치
-    private String order;
 
     private static int[][] maps;
+
+    private TextView textView;
 
     // BroadcastReceiver 정의
     // 여기서는 이전 예제에서처럼 별도의 Java class 파일로 만들지 않았는데, 어떻게 하든 상관 없음
@@ -111,66 +108,43 @@ public class FindActivity extends AppCompatActivity {
 
         Collections.sort(wifiList);
 
-        for(int i=0;i<5;i++){
+        for(int i=0;i<10;i++){
             comp.add(wifiList.get(i).getBssid());
-            Log.e("test",wifiList.get(i).getSsid() + " " + wifiList.get(i).getBssid()+" " + wifiList.get(i).getRssi());
         }
-
         set_up();
     }
 
-    private void scanFailure() {    // Wifi검색 실패
-    }
+    private void scanFailure() {}
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ViewEx viewEx = new ViewEx(this);
-        setContentView(R.layout.activity_find);
+        setContentView(R.layout.activity_find_four);
+
+        textView = findViewById(R.id.textView);
+        //목적지 받아오기
         Intent intent = getIntent();
-        destinationName = intent.getStringExtra("className");
+        if(intent != null) {
+            destinationName = intent.getStringExtra("className");
+        }
         firebaseFirestore = FirebaseFirestore.getInstance();
+
+        //측정 시작
+        BackgroundThread thread = new BackgroundThread();
         requestRuntimePermission();
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        thread.start();
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         getApplicationContext().registerReceiver(wifiScanReceiverNow, intentFilter);
         // wifi가 활성화되어있는지 확인 후 꺼져 있으면 켠다
-        if(wifiManager.isWifiEnabled() == false)
+        if(wifiManager.isWifiEnabled() == false) {
             wifiManager.setWifiEnabled(true);
+        }
 
         //로딩창 객체 생성
         customProgressDialog = new CustomDialog(this);
         customProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         customProgressDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-        //order = get.getStringExtra("order");
-        btnNow = findViewById(R.id.btn_find);
-        btnNow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(isPermitted) {
-                    customProgressDialog.show();
-                    //화면터치 방지
-                    customProgressDialog.setCanceledOnTouchOutside(false);
-                    //뒤로가기 방지
-                    customProgressDialog.setCancelable(false);
-                    wifiList.clear();
-                    // wifi 스캔 시작
-                    boolean start = wifiManager.startScan();
-                    if(start){
-                        Toast.makeText(FindActivity.this,"success",Toast.LENGTH_SHORT).show();
-                        set_up();
-                    }else{
-                        Toast.makeText(FindActivity.this,"fail",Toast.LENGTH_SHORT).show();
-                        customProgressDialog.cancel();
-                    }
-                } else {
-                    Toast.makeText(getApplicationContext(),
-                            "Location access 권한이 없습니다..", Toast.LENGTH_LONG).show();
-                    finishAffinity();
-                }
-            }
-        });
-        textName = findViewById(R.id.text_name);
         setUpMap();
         filePath = getApplicationContext().getFilesDir().getPath().toString();
         String mapPath = filePath + "/AstarMap.txt";
@@ -181,8 +155,6 @@ public class FindActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        setSourceCoord();
-
     }
 
     // Map을 기본적으로 모두 1 (이동불가)로 설정해두고, 이동할 수 있는 경로만 0으로 변경해줌.
@@ -240,84 +212,6 @@ public class FindActivity extends AppCompatActivity {
 //                (6, 10)   (25, 10)
 //                => 아르테크네
                 if (x >= 6 && x <= 26 && y >= 5 && y <= 10) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 27 && x <= 29 && y == 11) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 28 && x <= 29 && y == 12) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 28 && x <= 30 && y == 13) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 29 && x <= 31 && y == 14) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 30 && x <= 31 && y == 15) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 30 && x <= 31 && y == 16) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 31 && x <= 33 && y == 17) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 31 && x <= 33 && y == 18) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 32 && x <= 34 && y == 19) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 32 && x <= 34 && y == 20) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 33 && x <= 35 && y == 21) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 34 && x <= 35 && y == 22) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 34 && x <= 36 && y == 23) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 35 && x <= 37 && y == 24) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 35 && x <= 37 && y == 25) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 36 && x <= 38 && y == 26) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 36 && x <= 38 && y == 27) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 37 && x <= 39 && y == 28) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 38 && x <= 40 && y == 29) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 38 && x <= 40 && y == 30) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 39 && x <= 40 && y == 31) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 39 && x <= 41   && y == 32) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 40 && x <= 42 && y == 33) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 40 && x <= 42 && y == 34) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 41 && x <= 43 && y == 35) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 42 && x <= 44 && y == 36) {
                     maps[y][x] = 0;
                 }
 
@@ -480,76 +374,64 @@ public class FindActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.isSuccessful()){
+                    int best_count = 0;
                     int best = 0;
                     for(QueryDocumentSnapshot documentSnapshot : task.getResult()) {
                         ArrayList<String> test = new ArrayList<>();
                         ArrayList<Object> get = (ArrayList<Object>) documentSnapshot.getData().get("RSSI");
-                        for(int i=0;i<5;i++){
+                        for(int i=0;i<10;i++){
                             HashMap<String, String> data = (HashMap<String, String>) get.get(i);
-//                            Log.e("SSID", data.get("ssid"));
-//                            Log.e("BSSID", data.get("bssid"));
-//                            Log.e("RSSI",String.valueOf(data.get("rssi")));
                             test.add(data.get("bssid"));
                             if(comp.contains(data.get("bssid"))){
                                 count++;
                             }
                         }
                         //4개 이상 동일시 그냥 현재위치로 추정
-                        if(count >= 3) {
-                            //textName.setText(documentSnapshot.getData().get("class").toString());
-                            int tmp = 0;
-                            for(int i=0;i<comp.size();i++){
-                                if(test.get(i).equals(comp.get(i))){
-                                    tmp++;
-                                }
-                            }
-                            if(best < tmp){
-                                best = tmp;
-                                Log.e("b",best+"");
-                                result = documentSnapshot.getData().get("class").toString();
-                                Log.e("test", result);
-                            }
+                        if(best_count < count){
+                            best_count = count;
+                            result = documentSnapshot.getData().get("class").toString();
                         }
+                        else if(best_count == count){
+
+                        }
+                        count = 0;
                     }
-                    textName.setText(result);
+                    textView.setText(result);
+                    if(destinationName == null)
+                        destinationName = result;
                     // 여기서 출발지가 결정된다.
                     sourceName = result;
-                    count = 0;
+                    setSourceCoord();
                 }
             }
         });
         // 일단은 정적으로 값을 넣어두겠다.
-        sourceName = "412";
+        //sourceName = "412";
     }
 
-    protected class ViewEx extends View{
-        public ViewEx(Context context)
-        {
-            super(context);
-        }
-        public void onDraw(Canvas canvas)
-        {
-            canvas.drawColor(Color.BLACK);
-
-            Paint MyPaint = new Paint();
-            MyPaint.setStrokeWidth(5f);
-            MyPaint.setStyle(Paint.Style.FILL);
-            MyPaint.setColor(Color.GRAY);
-            canvas.drawLine(0,0,360,640,MyPaint);
+    class BackgroundThread extends Thread{
+        public void run(){
+            while(true){
+                try{
+                    Thread.sleep(100);
+                }catch (Exception e){}
+                wifiList.clear();
+                // wifi 스캔 시작
+                wifiManager.startScan();
+            }
         }
     }
-
 
     //허용하시겠습니까? 퍼미션 창 뜨게하는 것!
     private void requestRuntimePermission() {
-        if (ContextCompat.checkSelfPermission(FindActivity.this,
+        if (ContextCompat.checkSelfPermission(FindActivity_four.this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            if (ActivityCompat.shouldShowRequestPermissionRationale(FindActivity.this,
+            if (ActivityCompat.shouldShowRequestPermissionRationale(FindActivity_four.this,
                     Manifest.permission.ACCESS_FINE_LOCATION)) {
             } else {
-                ActivityCompat.requestPermissions(FindActivity.this,
+                ActivityCompat.requestPermissions(FindActivity_four.this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
             }
@@ -559,7 +441,7 @@ public class FindActivity extends AppCompatActivity {
     }
 
     private void setSourceCoord() {
-        DocumentReference docRef = firebaseFirestore.collection("classroom_coordinate").document("413");
+        DocumentReference docRef = firebaseFirestore.collection("classroom_coordinate").document(sourceName);
         docRef.get()
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
@@ -573,7 +455,7 @@ public class FindActivity extends AppCompatActivity {
                                     String yValue = values[1];
                                     Log.e("TAG", "x값 : " + xValue);
                                     sourceNode = new Node(Integer.parseInt(yValue), Integer.parseInt(xValue));
-                                    setDestCoord(destinationName);
+                                    setDestCoord();
                                 }
                             }
                         } else {
@@ -590,8 +472,8 @@ public class FindActivity extends AppCompatActivity {
 
     }
 
-    private void setDestCoord(String dest) {
-        DocumentReference docRef = firebaseFirestore.collection("classroom_coordinate").document(dest);
+    private void setDestCoord() {
+        DocumentReference docRef = firebaseFirestore.collection("classroom_coordinate").document(destinationName);
         docRef.get()
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
@@ -604,8 +486,18 @@ public class FindActivity extends AppCompatActivity {
                                     String xValue = values[0];
                                     String yValue = values[1];
                                     Log.e("TAG", "x값 : " + xValue);
+
                                     destNode = new Node(Integer.parseInt(yValue), Integer.parseInt(xValue));
                                     DrawMap.draw(filePath, maps, sourceNode, destNode, getApplicationContext());
+                                    ArrayList<Node> getPaths = DrawMap.getPaths();
+                                    ImageView view1 = findViewById(R.id.view1);
+                                    for(int i=0;i<getPaths.size();i++){
+                                        Node startPoint = getPaths.get(i);
+                                        if(i+1 < getPaths.size()) {
+                                            Node endPoint = getPaths.get(i + 1);
+                                            drawLine(view1, startPoint.coord.y, startPoint.coord.x, endPoint.coord.y, endPoint.coord.x);
+                                        }
+                                    }
                                 }
                             }
                         } else {
@@ -626,21 +518,37 @@ public class FindActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // ACCESS_FINE_LOCATION 권한을 얻음
-                    isPermitted = true;
+        if (requestCode == MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {// If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // ACCESS_FINE_LOCATION 권한을 얻음
+                isPermitted = true;
 
-                } else {
-                    // 권한을 얻지 못 하였으므로 location 요청 작업을 수행할 수 없다
-                    // 적절히 대처한다
-                    isPermitted = false;
-                }
+            } else {
+                // 권한을 얻지 못 하였으므로 location 요청 작업을 수행할 수 없다
+                // 적절히 대처한다
+                isPermitted = false;
             }
         }
     }
+    public void drawLine(ImageView imageView, float startX, float startY, float endX, float endY) {
+        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        Bitmap mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
 
+        Canvas canvas = new Canvas(mutableBitmap);
+        Paint paint = new Paint();
+        paint.setColor(Color.RED);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(7.0f);
+
+        // 상대적인 위치를 기준으로 선을 그립니다.
+        float startXPos = (startX / 100) * canvas.getWidth();
+        float startYPos = (startY / 100) * canvas.getHeight();
+        float endXPos = (endX / 100) * canvas.getWidth();
+        float endYPos = (endY / 100) * canvas.getHeight();
+
+        canvas.drawLine(startXPos, startYPos, endXPos, endYPos, paint);
+
+        imageView.setImageBitmap(mutableBitmap);
+    }
 }
