@@ -512,7 +512,9 @@ public class FindActivity_four extends AppCompatActivity {
                                         Node startPoint = getPaths.get(i);
                                         if(i+1 < getPaths.size()) {
                                             Node endPoint = getPaths.get(i + 1);
-                                            drawLine(startPoint.coord.y, startPoint.coord.x, endPoint.coord.y, endPoint.coord.x);
+                                            if(getPaths.size() != 2) {
+                                                drawLine(startPoint.coord.y, startPoint.coord.x, endPoint.coord.y, endPoint.coord.x);
+                                            }
                                         }
                                     }
                                 }
@@ -570,7 +572,11 @@ public class FindActivity_four extends AppCompatActivity {
     }
 
     private void clearCanvas() {
-        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        imageView.setImageBitmap(bitmap);
+//        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        imageView.findViewById(R.id.view1);
+        bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        canvas = new Canvas(mutableBitmap);
+//        imageView.setImageBitmap(bitmap);
     }
 }
