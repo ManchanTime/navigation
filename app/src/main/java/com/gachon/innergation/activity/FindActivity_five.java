@@ -15,6 +15,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.net.wifi.ScanResult;
@@ -77,6 +78,11 @@ public class FindActivity_five extends AppCompatActivity {
 
     private TextView textView;
 
+    private ImageView imageView;
+    private Bitmap bitmap;
+    private Bitmap mutableBitmap;
+    private Canvas canvas;
+
     // BroadcastReceiver 정의
     // 여기서는 이전 예제에서처럼 별도의 Java class 파일로 만들지 않았는데, 어떻게 하든 상관 없음
     BroadcastReceiver wifiScanReceiverNow = new BroadcastReceiver() {
@@ -121,6 +127,12 @@ public class FindActivity_five extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_find_five);
 
+        // canvas를 액티비티 생성 시점에 하나만 생성해서 재활용 하겠음 (canvas 중복 draw 방지)
+        imageView = findViewById(R.id.view1);
+        bitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+        mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        canvas = new Canvas(mutableBitmap);
+
         textView = findViewById(R.id.textView);
         //목적지 받아오기
         Intent intent = getIntent();
@@ -155,6 +167,9 @@ public class FindActivity_five extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        sourceName = "512";
+        setSourceCoord();
     }
 
     // Map을 기본적으로 모두 1 (이동불가)로 설정해두고, 이동할 수 있는 경로만 0으로 변경해줌.
@@ -434,7 +449,6 @@ public class FindActivity_five extends AppCompatActivity {
         }
     }
 
-
     // 스캔을 완료했을떄, 스캔한 값으로 현재 강의실 이름을 받아오는 좌표.
     // 강의실 이름을 다 받아오면 Astar 경로 출력을 해보는 테스트를 임의로 진행해보겠다.
     public void set_up(){
@@ -476,7 +490,7 @@ public class FindActivity_five extends AppCompatActivity {
             }
         });
         // 일단은 정적으로 값을 넣어두겠다.
-        //sourceName = "412";
+        sourceName = "512";
     }
 
     class BackgroundThread extends Thread{
@@ -494,14 +508,14 @@ public class FindActivity_five extends AppCompatActivity {
 
     //허용하시겠습니까? 퍼미션 창 뜨게하는 것!
     private void requestRuntimePermission() {
-        if (ContextCompat.checkSelfPermission(FindActivity_five.this,
+        if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            if (ActivityCompat.shouldShowRequestPermissionRationale(FindActivity_five.this,
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.ACCESS_FINE_LOCATION)) {
             } else {
-                ActivityCompat.requestPermissions(FindActivity_five.this,
+                ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
             }
@@ -525,6 +539,8 @@ public class FindActivity_five extends AppCompatActivity {
                                     String yValue = values[1];
                                     Log.e("TAG", "x값 : " + xValue);
                                     sourceNode = new Node(Integer.parseInt(yValue), Integer.parseInt(xValue));
+                                    // 사용자의 출발지를 확인했으면 기존에 만들어진 canvas를 클리어 해준다.
+                                    clearCanvas();
                                     setDestCoord();
                                 }
                             }
@@ -560,12 +576,14 @@ public class FindActivity_five extends AppCompatActivity {
                                     destNode = new Node(Integer.parseInt(yValue), Integer.parseInt(xValue));
                                     DrawMap.draw(filePath, maps, sourceNode, destNode, getApplicationContext());
                                     ArrayList<Node> getPaths = DrawMap.getPaths();
-                                    ImageView view1 = findViewById(R.id.view1);
+//                                    ImageView view1 = findViewById(R.id.view1);
                                     for(int i=0;i<getPaths.size();i++){
                                         Node startPoint = getPaths.get(i);
                                         if(i+1 < getPaths.size()) {
                                             Node endPoint = getPaths.get(i + 1);
-                                            drawLine(view1, startPoint.coord.y, startPoint.coord.x, endPoint.coord.y, endPoint.coord.x);
+                                            if(getPaths.size() != 2) {
+                                                drawLine(startPoint.coord.y, startPoint.coord.x, endPoint.coord.y, endPoint.coord.x);
+                                            }
                                         }
                                     }
                                 }
@@ -601,11 +619,11 @@ public class FindActivity_five extends AppCompatActivity {
             }
         }
     }
-    private void drawLine(ImageView imageView, float startX, float startY, float endX, float endY) {
-        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-        Bitmap mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-
-        Canvas canvas = new Canvas(mutableBitmap);
+    public void drawLine(float startX, float startY, float endX, float endY) {
+//        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+//        Bitmap mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+//
+//        Canvas canvas = new Canvas(mutableBitmap);
         Paint paint = new Paint();
         paint.setColor(Color.RED);
         paint.setStyle(Paint.Style.STROKE);
@@ -620,5 +638,14 @@ public class FindActivity_five extends AppCompatActivity {
         canvas.drawLine(startXPos, startYPos, endXPos, endYPos, paint);
 
         imageView.setImageBitmap(mutableBitmap);
+    }
+
+    private void clearCanvas() {
+//        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        imageView.findViewById(R.id.view1);
+        bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        canvas = new Canvas(mutableBitmap);
+//        imageView.setImageBitmap(bitmap);
     }
 }

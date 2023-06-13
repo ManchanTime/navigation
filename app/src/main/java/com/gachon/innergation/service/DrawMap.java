@@ -22,9 +22,10 @@ import java.util.List;
 
 public class DrawMap {
 
-    private static ArrayList<Node> paths = new ArrayList<>();
+    private static ArrayList<Node> paths;
     public static void draw(String filePath, int[][] maps, Node sourceNode, Node destNode, Context context) {
         MapInfo info=new MapInfo(maps,maps[0].length, maps.length,sourceNode, destNode);
+        paths = new ArrayList<>();
         new Astar().start(info, paths);
 //        Intent intent = new Intent(context, NavigateActivity.class);
 //        intent.putExtra("paths", paths);
@@ -32,7 +33,7 @@ public class DrawMap {
 //        context.startActivity(intent);
 //        Log.e("TAG", "경로 리스트 갯수" + paths.size());
 //        // TODO 여기서 지도 띄워주는 액티비티 호출하면 될듯
-//        printMap(filePath, maps);
+        printMap(filePath, maps);
     }
 
     public static ArrayList<Node> getPaths(){

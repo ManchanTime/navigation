@@ -230,6 +230,110 @@ public class FindActivity_four extends AppCompatActivity {
                     maps[y][x] = 0;
                 }
 
+                if (x >= 27 && x <= 29 && y == 11) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 28 && x <= 29 && y == 12) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 28 && x <= 30 && y == 13) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 29 && x <= 31 && y == 14) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 30 && x <= 31 && y == 15) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 30 && x <= 31 && y == 16) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 31 && x <= 33 && y == 17) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 31 && x <= 33 && y == 18) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 32 && x <= 34 && y == 19) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 32 && x <= 34 && y == 20) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 33 && x <= 35 && y == 21) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 34 && x <= 35 && y == 22) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 34 && x <= 36 && y == 23) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 35 && x <= 37 && y == 24) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 35 && x <= 37 && y == 25) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 36 && x <= 38 && y == 26) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 36 && x <= 38 && y == 27) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 37 && x <= 39 && y == 28) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 38 && x <= 40 && y == 29) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 38 && x <= 40 && y == 30) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 39 && x <= 40 && y == 31) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 39 && x <= 41   && y == 32) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 40 && x <= 42 && y == 33) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 40 && x <= 42 && y == 34) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 41 && x <= 43 && y == 35) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 42 && x <= 44 && y == 36) {
+                    maps[y][x] = 0;
+                }
+
+                if (x >= 20 && x <= 44 && y == 37) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 20 && x <= 45 && y == 38) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 20 && x <= 46 && y == 39) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 20 && x <= 46 && y == 40) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 20 && x <= 46 && y == 41) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 20 && x <= 47 && y == 42) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 20 && x <= 48 && y == 43) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 20 && x <= 48 && y == 44) {
+                    maps[y][x] = 0;
+                }
+
                 if (x >= 45 && x <= 49 && y == 44) {
                     maps[y][x] = 0;
                 }
@@ -421,7 +525,7 @@ public class FindActivity_four extends AppCompatActivity {
             }
         });
         // 일단은 정적으로 값을 넣어두겠다.
-        //sourceName = "412";
+        sourceName = "412";
     }
 
     class BackgroundThread extends Thread{
