@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.gachon.innergation.activity.FindActivity_five;
 import com.gachon.innergation.activity.FindActivity_four;
 import com.gachon.innergation.R;
 
@@ -46,13 +47,21 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassListVie
     public void onBindViewHolder(@NonNull final ClassListViewHolder holder, @SuppressLint("RecyclerView") int position){
         CardView cardView = holder.cardView;
         Button button = cardView.findViewById(R.id.btn_class);
-        button.setText(mDataset.get(position) + "호");
+        String className = mDataset.get(position);
+        button.setText(className + "호");
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(activity, FindActivity_four.class);
-                intent.putExtra("className", mDataset.get(position));
-                activity.startActivity(intent);
+                String first = className.substring(0,1);
+                if(first.equals("4") || className.equals("ARTECHNE_4호")) {
+                    Intent intent = new Intent(activity, FindActivity_four.class);
+                    intent.putExtra("className", mDataset.get(position));
+                    activity.startActivity(intent);
+                } else if(first.equals("5") || className.equals("ARTECHNE_5호")) {
+                    Intent intent = new Intent(activity, FindActivity_five.class);
+                    intent.putExtra("className", mDataset.get(position));
+                    activity.startActivity(intent);
+                }
             }
         });
     }

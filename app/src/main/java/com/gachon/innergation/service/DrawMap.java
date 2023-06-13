@@ -22,8 +22,9 @@ import java.util.List;
 
 public class DrawMap {
 
-    private static ArrayList<Node> paths = new ArrayList<>();
+    private static ArrayList<Node> paths;
     public static void draw(String filePath, int[][] maps, Node sourceNode, Node destNode, Context context) {
+        paths = new ArrayList<>();
         MapInfo info=new MapInfo(maps,maps[0].length, maps.length,sourceNode, destNode);
         new Astar().start(info, paths);
 //        Intent intent = new Intent(context, NavigateActivity.class);

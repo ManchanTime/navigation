@@ -20,11 +20,15 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.gachon.innergation.R;
 import com.gachon.innergation.dialog.CustomDialog;
@@ -44,6 +48,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -68,6 +73,7 @@ public class FindActivity_four extends AppCompatActivity {
     private int count = 0;
     //비교 시 4개이상 동일한게 없다면 리스트에 넣어서 제일 비슷한걸로
     private String result;
+    private String previous;
     //비교할 bssid 꺼내기
     private ArrayList<String> comp = new ArrayList<>();
     //퍼미션
@@ -82,6 +88,9 @@ public class FindActivity_four extends AppCompatActivity {
     private Bitmap bitmap;
     private Bitmap mutableBitmap;
     private Canvas canvas;
+    private ArrayList<Node> getPaths = new ArrayList<>();
+    private Node currentPoint;
+    private boolean update;
 
     // BroadcastReceiver 정의
     // 여기서는 이전 예제에서처럼 별도의 Java class 파일로 만들지 않았는데, 어떻게 하든 상관 없음
@@ -142,10 +151,10 @@ public class FindActivity_four extends AppCompatActivity {
         firebaseFirestore = FirebaseFirestore.getInstance();
 
         //측정 시작
-        BackgroundThread thread = new BackgroundThread();
+        BackgroundTask backgroundTask = new BackgroundTask();
         requestRuntimePermission();
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        thread.start();
+        backgroundTask.execute();
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         getApplicationContext().registerReceiver(wifiScanReceiverNow, intentFilter);
         // wifi가 활성화되어있는지 확인 후 꺼져 있으면 켠다
@@ -167,9 +176,6 @@ public class FindActivity_four extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        sourceName = "412";
-        setSourceCoord();
     }
 
     // Map을 기본적으로 모두 1 (이동불가)로 설정해두고, 이동할 수 있는 경로만 0으로 변경해줌.
@@ -411,30 +417,51 @@ public class FindActivity_four extends AppCompatActivity {
                         }
                         count = 0;
                     }
-                    textView.setText(result);
+                    textView.setText("현재 위치\n" + result);
                     if(destinationName == null)
-                        destinationName = result;
+                        destinationName = "null";
                     // 여기서 출발지가 결정된다.
                     sourceName = result;
-                    setSourceCoord();
+                    if(previous == null || !previous.equals(result)) {
+                        previous = result;
+                        setSourceCoord();
+                    }
+
                 }
             }
         });
-        // 일단은 정적으로 값을 넣어두겠다.
-        //sourceName = "412";
     }
 
-    class BackgroundThread extends Thread{
-        public void run(){
-            while(true){
-                try{
-                    Thread.sleep(100);
-                }catch (Exception e){}
+    private class BackgroundTask extends AsyncTask<Integer, Integer, Integer> {
+        // 백그라운드 작업
+        protected Integer doInBackground(Integer... integers) {
+            while (sourceName == null || !sourceName.equals(destinationName)) {
+                try {
+                    Thread.sleep(3000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 wifiList.clear();
                 // wifi 스캔 시작
                 wifiManager.startScan();
             }
+            publishProgress(0);
+            return 0;
         }
+
+        // 중간중간 프로그레스 퍼센트를 업데이트 해준다.
+        protected void onProgressUpdate(Integer... progress) {
+
+        }
+
+        // 작업이 모두 끝나면 Dialog를 띄워 준다.
+        protected void onPostExecute(Integer result) {
+            showToast("목적지에 도착했습니다.");
+        }
+    }
+
+    private void showToast(String message){
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     //허용하시겠습니까? 퍼미션 창 뜨게하는 것!
@@ -472,7 +499,10 @@ public class FindActivity_four extends AppCompatActivity {
                                     sourceNode = new Node(Integer.parseInt(yValue), Integer.parseInt(xValue));
                                     // 사용자의 출발지를 확인했으면 기존에 만들어진 canvas를 클리어 해준다.
                                     clearCanvas();
-                                    setDestCoord();
+                                    drawPoint(0, sourceNode.coord.y, sourceNode.coord.x);
+                                    currentPoint = sourceNode;
+                                    if(!destinationName.equals("null"))
+                                        setDestCoord();
                                 }
                             }
                         } else {
@@ -502,17 +532,22 @@ public class FindActivity_four extends AppCompatActivity {
                                 if (values.length == 2) {
                                     String xValue = values[0];
                                     String yValue = values[1];
-                                    Log.e("TAG", "x값 : " + xValue);
 
                                     destNode = new Node(Integer.parseInt(yValue), Integer.parseInt(xValue));
+                                    if(!update){
+                                        drawPoint(2, destNode.coord.y, destNode.coord.x);
+                                        update = true;
+                                    }
                                     DrawMap.draw(filePath, maps, sourceNode, destNode, getApplicationContext());
-                                    ArrayList<Node> getPaths = DrawMap.getPaths();
+                                    getPaths = DrawMap.getPaths();
 //                                    ImageView view1 = findViewById(R.id.view1);
                                     for(int i=0;i<getPaths.size();i++){
                                         Node startPoint = getPaths.get(i);
                                         if(i+1 < getPaths.size()) {
                                             Node endPoint = getPaths.get(i + 1);
-                                            drawLine(startPoint.coord.y, startPoint.coord.x, endPoint.coord.y, endPoint.coord.x);
+                                            if(getPaths.size() != 2) {
+                                                drawLine(0, startPoint.coord.y, startPoint.coord.x, endPoint.coord.y, endPoint.coord.x);
+                                            }
                                         }
                                     }
                                 }
@@ -548,15 +583,42 @@ public class FindActivity_four extends AppCompatActivity {
             }
         }
     }
-    public void drawLine(float startX, float startY, float endX, float endY) {
+
+    //현재위치 점찍기?
+    public void drawPoint(int mode, float x, float y){
+        Paint paint = new Paint();
+        if(mode == 0) {
+            paint.setColor(Color.GREEN);
+            paint.setStrokeWidth(20f);
+        }
+        else if(mode == 1){
+            paint.setColor(Color.parseColor("#F5F5F5"));
+            paint.setStrokeWidth(22f);
+        }else{
+            paint.setColor(Color.BLUE);
+            paint.setStrokeWidth(30f);
+        }
+        float startXPos = (x / 100) * canvas.getWidth();
+        float startYPos = (y / 100) * canvas.getHeight();
+        canvas.drawPoint(startXPos, startYPos, paint);
+        imageView.setImageBitmap(mutableBitmap);
+    }
+
+    public void drawLine(int mode, float startX, float startY, float endX, float endY) {
 //        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
 //        Bitmap mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
 //
 //        Canvas canvas = new Canvas(mutableBitmap);
         Paint paint = new Paint();
-        paint.setColor(Color.RED);
+        if(mode == 0) {
+            paint.setColor(Color.RED);
+            paint.setStrokeWidth(7.0f);
+        }
+        else {
+            paint.setColor(Color.parseColor("#F5F5F5"));
+            paint.setStrokeWidth(7.8f);
+        }
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(7.0f);
 
         // 상대적인 위치를 기준으로 선을 그립니다.
         float startXPos = (startX / 100) * canvas.getWidth();
@@ -570,7 +632,18 @@ public class FindActivity_four extends AppCompatActivity {
     }
 
     private void clearCanvas() {
-        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        imageView.setImageBitmap(bitmap);
+        imageView.findViewById(R.id.view1);
+        if(currentPoint != null)
+            drawPoint(1, currentPoint.coord.y, currentPoint.coord.x);
+        for(int i=0;i<getPaths.size();i++){
+            Node startPoint = getPaths.get(i);
+            if(i+1 < getPaths.size()) {
+                Node endPoint = getPaths.get(i + 1);
+                if(getPaths.size() != 2) {
+                    drawLine(1, startPoint.coord.y, startPoint.coord.x, endPoint.coord.y, endPoint.coord.x);
+                }
+            }
+        }
+        getPaths.clear();
     }
 }

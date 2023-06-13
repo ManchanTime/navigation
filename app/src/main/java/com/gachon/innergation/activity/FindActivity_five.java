@@ -15,15 +15,18 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.gachon.innergation.R;
 import com.gachon.innergation.dialog.CustomDialog;
@@ -77,6 +80,14 @@ public class FindActivity_five extends AppCompatActivity {
 
     private TextView textView;
 
+    private ImageView imageView;
+    private Bitmap bitmap;
+    private Bitmap mutableBitmap;
+    private Canvas canvas;
+    private ArrayList<Node> getPaths = new ArrayList<>();
+    private Node currentPoint;
+    private boolean update;
+
     // BroadcastReceiver 정의
     // 여기서는 이전 예제에서처럼 별도의 Java class 파일로 만들지 않았는데, 어떻게 하든 상관 없음
     BroadcastReceiver wifiScanReceiverNow = new BroadcastReceiver() {
@@ -121,6 +132,12 @@ public class FindActivity_five extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_find_five);
 
+        // canvas를 액티비티 생성 시점에 하나만 생성해서 재활용 하겠음 (canvas 중복 draw 방지)
+        imageView = findViewById(R.id.view1);
+        bitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+        mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        canvas = new Canvas(mutableBitmap);
+
         textView = findViewById(R.id.textView);
         //목적지 받아오기
         Intent intent = getIntent();
@@ -130,10 +147,10 @@ public class FindActivity_five extends AppCompatActivity {
         firebaseFirestore = FirebaseFirestore.getInstance();
 
         //측정 시작
-        BackgroundThread thread = new BackgroundThread();
+        BackgroundTask thread = new BackgroundTask();
         requestRuntimePermission();
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        thread.start();
+        thread.execute();
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         getApplicationContext().registerReceiver(wifiScanReceiverNow, intentFilter);
         // wifi가 활성화되어있는지 확인 후 꺼져 있으면 켠다
@@ -155,10 +172,17 @@ public class FindActivity_five extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        //sourceName = "512";
+        setSourceCoord();
     }
 
-    // Map을 기본적으로 모두 1 (이동불가)로 설정해두고, 이동할 수 있는 경로만 0으로 변경해줌.
     private void setUpMap() {
+        int startX = 26, startY = 10;
+//        int endX = 72, endY = 84;
+        int endX = 42, endY = 37;
+        int cnt = 0;
+        boolean cntFlag = false;
         maps = new int[100][100];
         for (int i = 0; i < maps.length; i++) {
             for (int y = 0; y < maps[i].length; y++) {
@@ -168,272 +192,301 @@ public class FindActivity_five extends AppCompatActivity {
 
         for (int x = 0; x < maps.length; x++) {
             for (int y = 0; y < maps[x].length; y++) {
-
+//                (7,85)  (87,85)
+//                (7,88)  (87,88) - 삼각형 제외
 //                => 제일 아래 직사각형
-
-                if (x >= 8 && x <= 84 && y >= 84 && y <= 86) {
+                if (x >= 7 && x <= 87 && y >= 85 && y <= 88) {
                     maps[y][x] = 0;
                 }
 
+//                (20, 5)   (22, 5)
+//                (20, 88)   (22, 88)
 //                => 아르테크네에서 내려오는 직선 복도
-                if (x >= 20 && x <= 22 && y >= 11 && y <= 88) {
+                if (x >= 20 && x <= 22 && y >= 5 && y <= 88) {
                     maps[y][x] = 0;
                 }
 
-//                => 중간 엘레베이터 직사각형 (오류 날 시 수정)
-                if (x >= 20 && x <= 43 && y >= 33 && y <= 36) {
+//                (20, 37)   (44, 37)
+//                (20, 44)   (44, 44)
+//                => 중간 엘레베이터 직사각형
+                if (x >= 22 && x <= 42 && y >= 37 && y <= 44) {
                     maps[y][x] = 0;
                 }
 
+//                (31, 75)   (40, 75)
+//                (31, 84)   (40, 84)
 //                => 아래 엘레베이터 직사각형
-                if (x >= 30 && x <= 38 && y >= 74 && y <= 86) {
+                if (x >= 31 && x <= 40 && y >= 75 && y <= 84) {
                     maps[y][x] = 0;
                 }
 
+//                (22, 75)   (63, 75)
+//                (22, 76)   (63, 76)
 //                => 아래 엘레베이터 위 412호와 405호를 잇는 직사각형
-                if (x >= 20 && x <= 64 && y >= 74 && y <= 75) {
+                if (x >= 22 && x <= 63 && y >= 75 && y <= 76) {
                     maps[y][x] = 0;
                 }
 
+//                (6, 5)   (25, 5)
+//                (6, 10)   (25, 10)
 //                => 아르테크네
-                if (x >= 6 && x <= 28 && y >= 5 && y <= 11) {
+                if (x >= 6 && x <= 26 && y >= 5 && y <= 10) {
                     maps[y][x] = 0;
                 }
 
-//                => 큐브
-                if (x >= 37 && x <= 40 && y == 54) {
+                if (x >= 27 && x <= 29 && y == 11) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 28 && x <= 29 && y == 12) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 28 && x <= 30 && y == 13) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 29 && x <= 31 && y == 14) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 30 && x <= 31 && y == 15) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 30 && x <= 31 && y == 16) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 31 && x <= 33 && y == 17) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 31 && x <= 33 && y == 18) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 32 && x <= 34 && y == 19) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 32 && x <= 34 && y == 20) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 33 && x <= 35 && y == 21) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 34 && x <= 35 && y == 22) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 34 && x <= 36 && y == 23) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 35 && x <= 37 && y == 24) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 35 && x <= 37 && y == 25) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 36 && x <= 38 && y == 26) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 36 && x <= 38 && y == 27) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 37 && x <= 39 && y == 28) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 38 && x <= 40 && y == 29) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 38 && x <= 40 && y == 30) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 39 && x <= 40 && y == 31) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 39 && x <= 41   && y == 32) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 40 && x <= 42 && y == 33) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 40 && x <= 42 && y == 34) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 41 && x <= 43 && y == 35) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 42 && x <= 44 && y == 36) {
                     maps[y][x] = 0;
                 }
 
-                if (x >= 35 && x <= 53 && y == 55) {
+                if (x >= 20 && x <= 44 && y == 37) {
                     maps[y][x] = 0;
                 }
-                if (x >= 31 && x <= 54 && y == 56) {
+                if (x >= 20 && x <= 45 && y == 38) {
                     maps[y][x] = 0;
                 }
-                if (x >= 31 && x <= 46 && y == 57) {
+                if (x >= 20 && x <= 46 && y == 39) {
                     maps[y][x] = 0;
                 }
-                if (x >= 32 && x <= 45 && y == 58) {
+                if (x >= 20 && x <= 46 && y == 40) {
                     maps[y][x] = 0;
                 }
-                if (x >= 30 && x <= 46 && y == 59) {
+                if (x >= 20 && x <= 46 && y == 41) {
                     maps[y][x] = 0;
                 }
-                if (x >= 26 && x <= 44 && y == 60) {
+                if (x >= 20 && x <= 47 && y == 42) {
                     maps[y][x] = 0;
                 }
-                if (x >= 23 && x <= 42 && y == 61) {
+                if (x >= 20 && x <= 48 && y == 43) {
                     maps[y][x] = 0;
                 }
-                if (x >= 23 && x <= 28 && y == 62) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 23 && x <= 24 && y == 63) {
+                if (x >= 20 && x <= 48 && y == 44) {
                     maps[y][x] = 0;
                 }
 
-                if (x >= 26 && x <= 29 && y == 12) {
+                if (x >= 45 && x <= 49 && y == 44) {
                     maps[y][x] = 0;
                 }
-                if (x >= 27 && x <= 29 && y == 13) {
+                if (x >= 46 && x <= 49 && y == 45) {
                     maps[y][x] = 0;
                 }
-                if (x >= 28 && x <= 30 && y == 14) {
+                if (x >= 47 && x <= 50 && y == 46) {
                     maps[y][x] = 0;
                 }
-                if (x >= 28 && x <= 31 && y == 15) {
+                if (x >= 47 && x <= 50 && y == 47) {
                     maps[y][x] = 0;
                 }
-                if (x >= 29 && x <= 31 && y == 16) {
+                if (x >= 48 && x <= 50 && y == 48) {
                     maps[y][x] = 0;
                 }
-                if (x >= 29 && x <= 32 && y == 17) {
+                if (x >= 49 && x <= 51 && y == 49) {
                     maps[y][x] = 0;
                 }
-                if (x >= 30 && x <= 32 && y == 18) {
+                if (x >= 49 && x <= 52 && y == 50) {
                     maps[y][x] = 0;
                 }
-                if (x >= 30 && x <= 33 && y == 19) {
+                if (x >= 50 && x <= 52 && y == 51) {
                     maps[y][x] = 0;
                 }
-                if (x >= 31 && x <= 33 && y == 20) {
+                if (x >= 50 && x <= 53 && y == 52) {
                     maps[y][x] = 0;
                 }
-                if (x >= 32 && x <= 34 && y == 21) {
+                if (x >= 51 && x <= 53 && y == 53) {
                     maps[y][x] = 0;
                 }
-                if (x >= 32 && x <= 35 && y == 22) {
+                if (x >= 51 && x <= 54 && y == 54) {
                     maps[y][x] = 0;
                 }
-                if (x >= 33 && x <= 35 && y == 23) {
+                if (x >= 52 && x <= 54 && y == 55) {
                     maps[y][x] = 0;
                 }
-                if (x >= 33 && x <= 36 && y == 24) {
+                if (x >= 53 && x <= 55 && y == 56) {
                     maps[y][x] = 0;
                 }
-                if (x >= 34 && x <= 36 && y == 25) {
+                if (x >= 53 && x <= 56 && y == 57) {
                     maps[y][x] = 0;
                 }
-                if (x >= 35 && x <= 37 && y == 26) {
+                if (x >= 54 && x <= 57 && y == 58) {
                     maps[y][x] = 0;
                 }
-                if (x >= 35 && x <= 37 && y == 27) {
+                if (x >= 55 && x <= 57 && y == 59) {
                     maps[y][x] = 0;
                 }
-                if (x >= 36 && x <= 38 && y == 28) {
+                if (x >= 55 && x <= 58 && y == 60) {
                     maps[y][x] = 0;
                 }
-                if (x >= 36 && x <= 39 && y == 29) {
+                if (x >= 56 && x <= 58 && y == 61) {
                     maps[y][x] = 0;
                 }
-                if (x >= 37 && x <= 39 && y == 30) {
+                if (x >= 56 && x <= 59 && y == 62) {
                     maps[y][x] = 0;
                 }
-                if (x >= 38 && x <= 40 && y == 31) {
+                if (x >= 57 && x <= 60 && y == 63) {
                     maps[y][x] = 0;
                 }
-                if (x >= 38 && x <= 40 && y == 32) {
+                if (x >= 58 && x <= 60 && y == 64) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 58 && x <= 61 && y == 65) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 59 && x <= 61 && y == 66) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 60 && x <= 62 && y == 67) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 60 && x <= 62 && y == 68) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 61 && x <= 63 && y == 69) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 61 && x <= 63 && y == 70) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 62 && x <= 64 && y == 71) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 62 && x <= 65 && y == 72) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 63 && x <= 65 && y == 73) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 64 && x <= 66 && y == 74) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 64 && x <= 67 && y == 75) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 64 && x <= 67 && y == 76) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 65 && x <= 67 && y == 77) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 65 && x <= 68 && y == 78) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 67 && x <= 69 && y == 79) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 67 && x <= 69 && y == 80) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 68 && x <= 70 && y == 81) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 68 && x <= 71 && y == 82) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 69 && x <= 71 && y == 83) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 68 && x <= 71 && y == 84) {
                     maps[y][x] = 0;
                 }
 
-                if (x >= 39 && x <= 43 && y == 37) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 40 && x <= 44 && y == 38) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 41 && x <= 44 && y == 39) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 41 && x <= 45 && y == 40) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 42 && x <= 45 && y == 41) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 42 && x <= 46 && y == 42) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 43 && x <= 46 && y == 43) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 44 && x <= 47 && y == 44) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 45 && x <= 48 && y == 45) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 45 && x <= 48 && y == 46) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 45 && x <= 48 && y == 47) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 46 && x <= 49 && y == 48) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 47 && x <= 50 && y == 49) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 48 && x <= 51 && y == 50) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 48 && x <= 51 && y == 51) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 49 && x <= 51 && y == 52) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 49 && x <= 52 && y == 53) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 47 && x <= 53 && y == 54) {
-                    maps[y][x] = 0;
-                }
 
-
-
-//                 =>  대각선
-                if (x >= 51 && x <= 54 && y == 57) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 52 && x <= 55 && y == 58) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 53 && x <= 56 && y == 60) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 54 && x <= 57 && y == 61) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 54 && x <= 57 && y == 62) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 55 && x <= 58 && y == 63) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 55 && x <= 58 && y == 64) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 56 && x <= 59 && y == 65) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 56 && x <= 60 && y == 66) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 57 && x <= 60 && y == 67) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 58 && x <= 60 && y == 68) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 58 && x <= 61 && y == 69) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 59 && x <= 62 && y == 70) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 60 && x <= 62 && y == 71) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 60 && x <= 62 && y == 72) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 61 && x <= 64 && y == 73) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 60 && x <= 65 && y == 75) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 62 && x <= 65 && y == 76) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 63 && x <= 66 && y == 77) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 63 && x <= 67 && y == 78) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 64 && x <= 67 && y == 79) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 65 && x <= 68 && y == 80) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 66 && x <= 68 && y == 81) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 65 && x <= 69 && y == 82) {
-                    maps[y][x] = 0;
-                }
-                if (x >= 62 && x <= 69 && y == 83) {
-                    maps[y][x] = 0;
-                }
+                // y가 10일때 우리는 26,27,28 만 찍어야 함
+                // 근데 지금은 y가 10일때 26부터 70까지를 다 찍어버림
+//                if(y == startY && startY <= endY && startX <= endX) {
+//                    for(int k=0; k<4; k++) {
+//                        maps[y + k][startX] = 0;
+//                    }
+//                    cntFlag = !cntFlag;
+//                    if(!cntFlag) {
+//                        cnt++;
+//                        if(cnt % 2 == 0) {
+//                            startY++;
+//                        } else {
+//                            startX++;
+//                            startY++;
+//                        }
+////                        startY++;
+//                    } else {
+//                        startX++;
+//                        startY++;
+//                    }
+//                }
             }
         }
     }
-
 
     // 스캔을 완료했을떄, 스캔한 값으로 현재 강의실 이름을 받아오는 좌표.
     // 강의실 이름을 다 받아오면 Astar 경로 출력을 해보는 테스트를 임의로 진행해보겠다.
@@ -468,7 +521,7 @@ public class FindActivity_five extends AppCompatActivity {
                     }
                     textView.setText(result);
                     if(destinationName == null)
-                        destinationName = result;
+                        destinationName = "null";
                     // 여기서 출발지가 결정된다.
                     sourceName = result;
                     setSourceCoord();
@@ -476,32 +529,51 @@ public class FindActivity_five extends AppCompatActivity {
             }
         });
         // 일단은 정적으로 값을 넣어두겠다.
-        //sourceName = "412";
+        sourceName = "512";
     }
 
-    class BackgroundThread extends Thread{
-        public void run(){
-            while(true){
-                try{
-                    Thread.sleep(100);
-                }catch (Exception e){}
+    private class BackgroundTask extends AsyncTask<Integer, Integer, Integer> {
+        // 백그라운드 작업
+        protected Integer doInBackground(Integer... integers) {
+            while (sourceName == null || !sourceName.equals(destinationName)) {
+                try {
+                    Thread.sleep(3000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 wifiList.clear();
                 // wifi 스캔 시작
                 wifiManager.startScan();
             }
+            publishProgress(0);
+            return 0;
         }
+
+        // 중간중간 프로그레스 퍼센트를 업데이트 해준다.
+        protected void onProgressUpdate(Integer... progress) {
+
+        }
+
+        // 작업이 모두 끝나면 Dialog를 띄워 준다.
+        protected void onPostExecute(Integer result) {
+            showToast("목적지에 도착했습니다.");
+        }
+    }
+
+    private void showToast(String message){
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
     //허용하시겠습니까? 퍼미션 창 뜨게하는 것!
     private void requestRuntimePermission() {
-        if (ContextCompat.checkSelfPermission(FindActivity_five.this,
+        if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            if (ActivityCompat.shouldShowRequestPermissionRationale(FindActivity_five.this,
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.ACCESS_FINE_LOCATION)) {
             } else {
-                ActivityCompat.requestPermissions(FindActivity_five.this,
+                ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
             }
@@ -525,7 +597,12 @@ public class FindActivity_five extends AppCompatActivity {
                                     String yValue = values[1];
                                     Log.e("TAG", "x값 : " + xValue);
                                     sourceNode = new Node(Integer.parseInt(yValue), Integer.parseInt(xValue));
-                                    setDestCoord();
+                                    // 사용자의 출발지를 확인했으면 기존에 만들어진 canvas를 클리어 해준다.
+                                    clearCanvas();
+                                    drawPoint(0, sourceNode.coord.y, sourceNode.coord.x);
+                                    currentPoint = sourceNode;
+                                    if(!destinationName.equals("null"))
+                                        setDestCoord();
                                 }
                             }
                         } else {
@@ -558,14 +635,20 @@ public class FindActivity_five extends AppCompatActivity {
                                     Log.e("TAG", "x값 : " + xValue);
 
                                     destNode = new Node(Integer.parseInt(yValue), Integer.parseInt(xValue));
+                                    if(!update){
+                                        drawPoint(2, destNode.coord.y, destNode.coord.x);
+                                        update = true;
+                                    }
                                     DrawMap.draw(filePath, maps, sourceNode, destNode, getApplicationContext());
-                                    ArrayList<Node> getPaths = DrawMap.getPaths();
-                                    ImageView view1 = findViewById(R.id.view1);
+                                    getPaths = DrawMap.getPaths();
+//                                    ImageView view1 = findViewById(R.id.view1);
                                     for(int i=0;i<getPaths.size();i++){
                                         Node startPoint = getPaths.get(i);
                                         if(i+1 < getPaths.size()) {
                                             Node endPoint = getPaths.get(i + 1);
-                                            drawLine(view1, startPoint.coord.y, startPoint.coord.x, endPoint.coord.y, endPoint.coord.x);
+                                            if(getPaths.size() != 2) {
+                                                drawLine(0, startPoint.coord.y, startPoint.coord.x, endPoint.coord.y, endPoint.coord.x);
+                                            }
                                         }
                                     }
                                 }
@@ -601,15 +684,42 @@ public class FindActivity_five extends AppCompatActivity {
             }
         }
     }
-    private void drawLine(ImageView imageView, float startX, float startY, float endX, float endY) {
-        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-        Bitmap mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
 
-        Canvas canvas = new Canvas(mutableBitmap);
+    //현재위치 점찍기?
+    public void drawPoint(int mode, float x, float y){
         Paint paint = new Paint();
-        paint.setColor(Color.RED);
+        if(mode == 0) {
+            paint.setColor(Color.GREEN);
+            paint.setStrokeWidth(20f);
+        }
+        else if(mode == 1){
+            paint.setColor(Color.parseColor("#F5F5F5"));
+            paint.setStrokeWidth(22f);
+        }else{
+            paint.setColor(Color.BLUE);
+            paint.setStrokeWidth(30f);
+        }
+        float startXPos = (x / 100) * canvas.getWidth();
+        float startYPos = (y / 100) * canvas.getHeight();
+        canvas.drawPoint(startXPos, startYPos, paint);
+        imageView.setImageBitmap(mutableBitmap);
+    }
+
+    public void drawLine(int mode, float startX, float startY, float endX, float endY) {
+//        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+//        Bitmap mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+//
+//        Canvas canvas = new Canvas(mutableBitmap);
+        Paint paint = new Paint();
+        if(mode == 0) {
+            paint.setColor(Color.RED);
+            paint.setStrokeWidth(7.0f);
+        }
+        else {
+            paint.setColor(Color.parseColor("#F5F5F5"));
+            paint.setStrokeWidth(7.8f);
+        }
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(7.0f);
 
         // 상대적인 위치를 기준으로 선을 그립니다.
         float startXPos = (startX / 100) * canvas.getWidth();
@@ -620,5 +730,14 @@ public class FindActivity_five extends AppCompatActivity {
         canvas.drawLine(startXPos, startYPos, endXPos, endYPos, paint);
 
         imageView.setImageBitmap(mutableBitmap);
+    }
+
+    private void clearCanvas() {
+//        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+        imageView.findViewById(R.id.view1);
+        bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
+        canvas = new Canvas(mutableBitmap);
+//        imageView.setImageBitmap(bitmap);
     }
 }
