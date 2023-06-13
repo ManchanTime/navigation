@@ -733,11 +733,18 @@ public class FindActivity_five extends AppCompatActivity {
     }
 
     private void clearCanvas() {
-//        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
         imageView.findViewById(R.id.view1);
-        bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
-        mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
-        canvas = new Canvas(mutableBitmap);
-//        imageView.setImageBitmap(bitmap);
+        if(currentPoint != null)
+            drawPoint(1, currentPoint.coord.y, currentPoint.coord.x);
+        for(int i=0;i<getPaths.size();i++){
+            Node startPoint = getPaths.get(i);
+            if(i+1 < getPaths.size()) {
+                Node endPoint = getPaths.get(i + 1);
+                if(getPaths.size() != 2) {
+                    drawLine(1, startPoint.coord.y, startPoint.coord.x, endPoint.coord.y, endPoint.coord.x);
+                }
+            }
+        }
+        getPaths.clear();
     }
 }
