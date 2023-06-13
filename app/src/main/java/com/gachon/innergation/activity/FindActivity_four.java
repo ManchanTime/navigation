@@ -464,24 +464,6 @@ public class FindActivity_four extends AppCompatActivity {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
-    //허용하시겠습니까? 퍼미션 창 뜨게하는 것!
-    private void requestRuntimePermission() {
-        if (ContextCompat.checkSelfPermission(FindActivity_four.this,
-                Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            if (ActivityCompat.shouldShowRequestPermissionRationale(FindActivity_four.this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
-            } else {
-                ActivityCompat.requestPermissions(FindActivity_four.this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-            }
-        } else {
-            isPermitted = true;
-        }
-    }
-
     private void setSourceCoord() {
         DocumentReference docRef = firebaseFirestore.collection("classroom_coordinate").document(sourceName);
         docRef.get()
@@ -566,6 +548,24 @@ public class FindActivity_four extends AppCompatActivity {
 
     }
 
+
+    //허용하시겠습니까? 퍼미션 창 뜨게하는 것!
+    private void requestRuntimePermission() {
+        if (ContextCompat.checkSelfPermission(FindActivity_four.this,
+                Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(FindActivity_four.this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+            } else {
+                ActivityCompat.requestPermissions(FindActivity_four.this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+            }
+        } else {
+            isPermitted = true;
+        }
+    }
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {

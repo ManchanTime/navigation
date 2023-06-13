@@ -91,6 +91,9 @@ public class UserSearchActivity extends AppCompatActivity {
         for(int i=1;i<10;i++){
             String name = "40" + i;
             classrooms.add(name);
+            if(i==7){
+                classrooms.add("407A");
+            }
         }
         for(int i=10;i<36;i++){
             String name = "4" + i;
@@ -101,6 +104,9 @@ public class UserSearchActivity extends AppCompatActivity {
         for(int i=1;i<10;i++){
             String name = "50" + i;
             classrooms.add(name);
+            if(i==7){
+                classrooms.add("507A");
+            }
         }
         for(int i=10;i<33;i++){
             String name = "5" + i;
