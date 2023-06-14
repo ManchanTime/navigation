@@ -29,6 +29,8 @@
 ## Semi-final Report
 [Term Project Team_12.pdf](https://github.com/ManchanTime/navigation/files/11635216/Term.Project.Team_12.pdf)
 
+## Demo Video
+[Demo Video](https://youtu.be/SCEQeZFbu6E)
 
 ## Member Information
 
