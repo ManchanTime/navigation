@@ -3,6 +3,7 @@ package com.gachon.innergation.adapter;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,12 +53,13 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassListVie
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.e("Test",mDataset.get(position));
                 String first = className.substring(0,1);
-                if(first.equals("4") || className.equals("ARTECHNE_4호")) {
+                if(first.equals("4") || className.equals("artechne_4")) {
                     Intent intent = new Intent(activity, FindActivity_four.class);
                     intent.putExtra("className", mDataset.get(position));
                     activity.startActivity(intent);
-                } else if(first.equals("5") || className.equals("ARTECHNE_5호")) {
+                } else if(first.equals("5") || className.equals("artechne_5")) {
                     Intent intent = new Intent(activity, FindActivity_five.class);
                     intent.putExtra("className", mDataset.get(position));
                     activity.startActivity(intent);

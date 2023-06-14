@@ -95,6 +95,9 @@ public class UserSearchActivity extends AppCompatActivity {
                 classrooms.add("407A");
             }
         }
+        classrooms.add("4_floor_elevator_left");
+        classrooms.add("4_floor_elevator_right");
+        classrooms.add("4_floor_terrace");
         for(int i=10;i<36;i++){
             String name = "4" + i;
             classrooms.add(name);
@@ -112,6 +115,8 @@ public class UserSearchActivity extends AppCompatActivity {
             String name = "5" + i;
             classrooms.add(name);
         }
+        classrooms.add("5_floor_elevator_left");
+        classrooms.add("5_floor_elevator_right");
         classrooms.add("artechne_5");
     }
 }

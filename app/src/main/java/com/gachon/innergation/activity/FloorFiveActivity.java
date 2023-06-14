@@ -46,6 +46,8 @@ public class FloorFiveActivity extends AppCompatActivity {
             String name = "5" + i;
             classrooms.add(name);
         }
+        classrooms.add("5_floor_elevator_left");
+        classrooms.add("5_floor_elevator_right");
         classrooms.add("artechne_5");
         classrooms.add("507_a");
     }

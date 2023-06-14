@@ -1,13 +1,16 @@
 package com.gachon.innergation.activity;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -59,7 +62,7 @@ public class FindActivity_four extends AppCompatActivity {
 
     private Node sourceNode;
     private Node destNode;
-    private String sourceName;
+    private String sourceName = "";
     private String destinationName;
     private String filePath;
     private FirebaseFirestore firebaseFirestore;
@@ -122,7 +125,7 @@ public class FindActivity_four extends AppCompatActivity {
         }
 
         Collections.sort(wifiList);
-
+        Log.e("Test","test");
         for(int i=0;i<10;i++){
             comp.add(wifiList.get(i).getBssid());
         }
@@ -232,7 +235,111 @@ public class FindActivity_four extends AppCompatActivity {
 //                (6, 5)   (25, 5)
 //                (6, 10)   (25, 10)
 //                => 아르테크네
-                if (x >= 6 && x <= 26 && y >= 5 && y <= 10) {
+                if (x >= 6 && x <= 28 && y >= 5 && y <= 10) {
+                    maps[y][x] = 0;
+                }
+
+                if (x >= 27 && x <= 29 && y == 11) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 28 && x <= 29 && y == 12) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 28 && x <= 30 && y == 13) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 29 && x <= 31 && y == 14) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 30 && x <= 31 && y == 15) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 30 && x <= 31 && y == 16) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 31 && x <= 33 && y == 17) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 31 && x <= 33 && y == 18) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 32 && x <= 34 && y == 19) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 32 && x <= 34 && y == 20) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 33 && x <= 35 && y == 21) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 34 && x <= 35 && y == 22) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 34 && x <= 36 && y == 23) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 35 && x <= 37 && y == 24) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 35 && x <= 37 && y == 25) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 36 && x <= 38 && y == 26) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 36 && x <= 38 && y == 27) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 37 && x <= 39 && y == 28) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 38 && x <= 40 && y == 29) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 38 && x <= 40 && y == 30) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 39 && x <= 40 && y == 31) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 39 && x <= 41   && y == 32) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 40 && x <= 42 && y == 33) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 40 && x <= 42 && y == 34) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 41 && x <= 43 && y == 35) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 42 && x <= 44 && y == 36) {
+                    maps[y][x] = 0;
+                }
+
+                if (x >= 20 && x <= 44 && y == 37) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 20 && x <= 45 && y == 38) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 20 && x <= 46 && y == 39) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 20 && x <= 46 && y == 40) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 20 && x <= 46 && y == 41) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 20 && x <= 47 && y == 42) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 20 && x <= 48 && y == 43) {
+                    maps[y][x] = 0;
+                }
+                if (x >= 20 && x <= 48 && y == 44) {
                     maps[y][x] = 0;
                 }
 
@@ -386,6 +493,7 @@ public class FindActivity_four extends AppCompatActivity {
         }
     }
 
+
     // 스캔을 완료했을떄, 스캔한 값으로 현재 강의실 이름을 받아오는 좌표.
     // 강의실 이름을 다 받아오면 Astar 경로 출력을 해보는 테스트를 임의로 진행해보겠다.
     public void set_up(){
@@ -412,12 +520,12 @@ public class FindActivity_four extends AppCompatActivity {
                             best_count = count;
                             result = documentSnapshot.getData().get("class").toString();
                         }
-                        else if(best_count == count){
-
-                        }
                         count = 0;
                     }
-                    textView.setText("현재 위치\n" + result);
+                    if(result.equals("4_floor_elevator_right") || result.equals("4_floor_elevator_right_left")){
+                        textView.setText("현재 위치\n" + "엘리베이터");
+                    }else
+                        textView.setText("현재 위치\n" + result);
                     if(destinationName == null)
                         destinationName = "null";
                     // 여기서 출발지가 결정된다.
@@ -426,21 +534,22 @@ public class FindActivity_four extends AppCompatActivity {
                         previous = result;
                         setSourceCoord();
                     }
-
                 }
             }
         });
     }
 
+    @SuppressLint("StaticFieldLeak")
     private class BackgroundTask extends AsyncTask<Integer, Integer, Integer> {
         // 백그라운드 작업
         protected Integer doInBackground(Integer... integers) {
-            while (sourceName == null || !sourceName.equals(destinationName)) {
+            while (sourceName != null && !sourceName.equals(destinationName)) {
                 try {
-                    Thread.sleep(3000);
+                    Thread.sleep(1000);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
                 wifiList.clear();
                 // wifi 스캔 시작
                 wifiManager.startScan();
@@ -462,6 +571,23 @@ public class FindActivity_four extends AppCompatActivity {
 
     private void showToast(String message){
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        AlertDialog.Builder builder = new AlertDialog.Builder(FindActivity_four.this);
+        builder.setTitle("완료");
+        builder.setMessage("목적지에 도착했습니다. 안내를 종료하시겠습니까?");
+        builder.setPositiveButton("예", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+        builder.setNegativeButton("아니오", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     private void setSourceCoord() {
