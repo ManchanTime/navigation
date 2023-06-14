@@ -28,15 +28,16 @@
             android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="30sp"
+            android:textSize="20sp"
             android:layout_gravity="end"
             tools:text="Hi"/>
 
-<!--        <com.example.myapplication3.DotView-->
-<!--            android:id="@+id/dot_view"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:scaleType="fitXY"/>-->
+
+        <!--        <com.example.myapplication3.DotView-->
+        <!--            android:id="@+id/dot_view"-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:scaleType="fitXY"/>-->
 
     </FrameLayout>
 

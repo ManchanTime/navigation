@@ -13,11 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.gachon.innergation.activity.FindActivity;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.gachon.innergation.activity.FindActivity_five;
+import com.gachon.innergation.activity.FindActivity_four;
 import com.gachon.innergation.R;
 
 import java.util.ArrayList;
@@ -51,13 +48,22 @@ public class ClassAdapter extends RecyclerView.Adapter<ClassAdapter.ClassListVie
     public void onBindViewHolder(@NonNull final ClassListViewHolder holder, @SuppressLint("RecyclerView") int position){
         CardView cardView = holder.cardView;
         Button button = cardView.findViewById(R.id.btn_class);
-        button.setText(mDataset.get(position) + "호");
+        String className = mDataset.get(position);
+        button.setText(className + "호");
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(activity, FindActivity.class);
-                intent.putExtra("className", mDataset.get(position));
-                activity.startActivity(intent);
+                Log.e("Test",mDataset.get(position));
+                String first = className.substring(0,1);
+                if(first.equals("4") || className.equals("artechne_4")) {
+                    Intent intent = new Intent(activity, FindActivity_four.class);
+                    intent.putExtra("className", mDataset.get(position));
+                    activity.startActivity(intent);
+                } else if(first.equals("5") || className.equals("artechne_5")) {
+                    Intent intent = new Intent(activity, FindActivity_five.class);
+                    intent.putExtra("className", mDataset.get(position));
+                    activity.startActivity(intent);
+                }
             }
         });
     }

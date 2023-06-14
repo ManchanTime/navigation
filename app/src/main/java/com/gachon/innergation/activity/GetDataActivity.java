@@ -256,35 +256,5 @@ public class GetDataActivity extends AppCompatActivity {
 
     public void getDataTest(){
         setting();
-//        FirebaseFirestore firebaseFirestore = FirebaseFirestore.getInstance();
-//        firebaseFirestore.collection("classrooms").document(name)
-//                .get()
-//                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-//                    @RequiresApi(api = Build.VERSION_CODES.N)
-//                    @Override
-//                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-//                        if(task.isSuccessful()){
-//                            DocumentSnapshot documentSnapshot = task.getResult();
-//                            ArrayList<Map<String, Integer>> get;
-//                            get = (ArrayList<Map<String, Integer>>) documentSnapshot.getData().get("RSSI");
-//                            if(get != null) {
-//                                for(int i=0;i<wifiList.size();i++){
-//                                    String bssid = wifiList.get(i).getBssid();
-//                                    long rssi = wifiList.get(i).getRssi();
-//                                    for(int j=0;j<get.size();j++){
-//                                        Map<String, Integer> tmp = get.get(i);
-//                                        if(tmp.get(bssid) != null) {
-//                                            long compare = Long.valueOf(String.valueOf(tmp.get(bssid)));
-//                                            if (rssi <= compare) {
-//                                                wifiList.get(i).setRssi(Integer.valueOf(String.valueOf(compare)));
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                            setUp();
-//                        }
-//                    }
-//                });
     }
 }

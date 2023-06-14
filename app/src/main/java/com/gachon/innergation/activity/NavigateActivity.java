@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,6 +26,7 @@ import java.util.List;
 public class NavigateActivity extends AppCompatActivity {
 
     ImageView view1;
+    TextView textView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,6 +36,7 @@ public class NavigateActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         ArrayList<Node> paths = (ArrayList<Node>) intent.getSerializableExtra("paths");
+        textView = findViewById(R.id.textView);
 
 
 

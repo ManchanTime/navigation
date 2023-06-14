@@ -55,7 +55,7 @@ public class Astar {
         while (end != null)
         {
             Coord c = end.coord;
-            maps[c.x][c.y] = PATH;
+//            maps[c.x][c.y] = PATH;
             paths.add(new Node(c.x, c.y));
             end = end.parent;
         }
